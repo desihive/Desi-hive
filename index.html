@@ -1,0 +1,2142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desi Hive - Unified Hub</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Arvo&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          emailjs.init({
+            publicKey: "YOUR_PUBLIC_KEY", 
+          });
+       })();
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #F8FAFC; 
+            overflow-x: hidden; 
+        }
+        
+        body::before {
+            content: ""; 
+            position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e0/India_location_map_blank.svg');
+            background-repeat: no-repeat; 
+            background-position: center; 
+            background-size: 60%;
+            opacity: 0.04; 
+            z-index: -1; 
+            pointer-events: none;
+        }
+
+        .job-card-new, .event-card-new { 
+            background: white; 
+            border: 1px solid #f1f5f9; 
+            transition: all 0.3s ease; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); 
+        }
+        .job-card-new { 
+            border-radius: 1.5rem; 
+            padding: 1.5rem; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+        }
+        .event-card-new { 
+            border-radius: 2rem; 
+            padding: 1.75rem; 
+        }
+        .job-card-new:hover, .event-card-new:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); 
+            border-color: #e2e8f0; 
+        }
+
+        .btn-apply-dark { background-color: #0f172a; color: white; border-radius: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.75rem; padding: 1rem; width: 100%; transition: background 0.2s; cursor: pointer; }
+        .btn-apply-dark:hover { background-color: #1e293b; }
+
+        .btn-join-pill { background-color: #0f172a; color: white; padding: 0.5rem 1.5rem; border-radius: 9999px; font-weight: 900; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: background 0.2s;}
+        .btn-join-pill:hover { background-color: #1e293b; }
+        .btn-join-pill.active { background-color: #d1fae5; color: #059669; }
+
+        #error-404-screen { display: none; position: fixed; inset: 0; z-index: 9999; background: #fff; font-family: 'Arvo', serif; text-align: center; }
+        .page_404 { padding: 40px 0; background: #fff; height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+        .four_zero_four_bg { background-image: url('https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif'); height: 400px; background-position: center; background-repeat: no-repeat; }
+        .four_zero_four_bg h1 { font-size: 80px; margin-top: 0; color: #1e293b; }
+        .contant_box_404 { margin-top: -50px; }
+        .link_404 { color: #fff !important; padding: 12px 30px; background: #39ac31; margin: 20px 0; display: inline-block; text-decoration: none; border-radius: 8px; transition: 0.3s; cursor: pointer; font-weight: bold; }
+        .link_404:hover { background: #2d8a27; }
+
+        .avatar-option { transition: all 0.3s ease; border: 2px solid transparent; }
+        .avatar-option:hover { transform: translateY(-5px); border-color: #2563eb; background: #eff6ff; }
+        .pulse-avatar { animation: avatar-pulse 2s infinite; }
+        @keyframes avatar-pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); } }
+
+        .desi-gradient { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+        .sidebar-gradient { background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); }
+        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        .glass-effect { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        .active-nav { background-color: #2563eb !important; color: white !important; }
+        .hidden-screen { display: none !important; }
+        
+        .flag-icon { width: 32px; height: 22px; border-radius: 4px; object-fit: cover; display: inline-block; vertical-align: middle; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        .logo-container { position: relative; width: 140px; height: 90px; margin: 0 auto; }
+        .bee-body { position: absolute; z-index: 10; width: 45px; top: 15px; left: 47px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
+        .wing { position: absolute; width: 60px; height: 45px; top: 10px; border: 1px solid rgba(0,0,0,0.1); background-size: cover; background-position: center; transition: 0.4s; background-color: #e2e8f0; }
+        .wing-left { left: 5px; background-image: url('https://flagcdn.com/w160/in.png'); border-radius: 50% 50% 0 50%; transform: rotate(-15deg); }
+        .wing-right { right: 5px; background-image: url('https://flagcdn.com/w160/in.png'); border-radius: 50% 50% 50% 0; transform: rotate(15deg); }
+        
+        .suggestions-list { position: absolute; width: 100%; max-height: 180px; overflow-y: auto; background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; z-index: 100; top: 100%; margin-top: 5px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+        .suggestion-item { padding: 12px 16px; cursor: pointer; font-size: 13px; font-weight: 500; color: #475569; border-bottom: 1px solid #f1f5f9; transition: background 0.2s; }
+        .suggestion-item:hover { background: #fffbeb; color: #b45309; }
+        
+        .otp-input { width: 50px; height: 60px; text-align: center; font-size: 1.5rem; font-weight: 900; background: #f1f5f9; border: 2px solid transparent; border-radius: 1rem; transition: all 0.3s; }
+        .otp-input:focus { border-color: #fbbf24; background: white; outline: none; }
+        .otp-error { border-color: #ef4444 !important; background: #fef2f2; color: #ef4444; animation: shake 0.4s ease-in-out; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-8px); } }
+        
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .toast-notification { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 300; }
+        .toast-active { bottom: 40px; }
+
+        .hive-ticker-wrap { position: fixed; bottom: 0; left: 0; width: 100%; height: 40px; background: #0f172a; border-top: 2px solid #fbbf24; display: flex; z-index: 500; transition: background 0.4s ease; }
+        .ticker-title { background: #fbbf24; color: #0f172a; padding: 0 20px; font-weight: 900; font-size: 11px; display: flex; align-items: center; white-space: nowrap; z-index: 501; }
+        .ticker-move { display: inline-block; white-space: nowrap; padding-left: 100%; animation: ticker-scroll 180s linear infinite; color: #fbbf24; font-size: 13px; font-weight: 600; align-self: center; }
+        .ticker-move:hover { animation-play-state: paused; cursor: pointer; }
+        @keyframes ticker-scroll { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+        .sos-cat-btn { border: 2px solid #f1f5f9; transition: all 0.2s; }
+        .sos-cat-btn:hover { background-color: #f8fafc; }
+        .sos-radio:checked + label { border-color: #ef4444; background-color: #fee2e2; color: #b91c1c; }
+        .sos-radio-orange:checked + label { border-color: #f97316; background-color: #fff7ed; color: #c2410c; }
+
+        .chat-bubble-me { background: #2563eb; color: white; border-radius: 20px 20px 4px 20px; box-shadow: 0 4px 15px -5px rgba(37, 99, 235, 0.4); }
+        .chat-bubble-them { background: #ffffff; color: #1e293b; border-radius: 20px 20px 20px 4px; border: 1px solid #f1f5f9; }
+        .attach-menu { animation: slideUp 0.2s ease-out; }
+        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .bazaar-card { background: white; border-radius: 1.5rem; overflow: hidden; border: 1px solid #f1f5f9; transition: all 0.3s; }
+        .bazaar-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px -10px rgba(0,0,0,0.1); border-color: #f59e0b; }
+        .donor-card { background: white; border-radius: 1.5rem; padding: 1.5rem; border: 1px solid #ffe4e6; transition: all 0.3s; display: flex; align-items: center; justify-content: space-between; }
+        .donor-card:hover { border-color: #e11d48; box-shadow: 0 10px 25px -5px rgba(225, 29, 72, 0.15); }
+
+        /* Search List Styles */
+        .chat-search-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 1rem; margin-top: 0.5rem; z-index: 50; max-height: 200px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; }
+        .chat-search-item { padding: 0.75rem 1rem; display: flex; items-center gap-3; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.2s; }
+        .chat-search-item:hover { background: #f8fafc; }
+        .chat-search-item img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+        .chat-search-item span { font-size: 0.875rem; font-weight: 600; color: #1e293b; }
+    </style>
+</head>
+<body class="text-slate-700 min-h-screen">
+
+    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-[600]"></canvas>
+
+    <div id="error-404-screen">
+        <section class="page_404">
+            <div class="container mx-auto">
+                <div class="four_zero_four_bg"><h1 class="text-center text-slate-800">500</h1></div>
+                <div class="contant_box_404 text-center">
+                    <h3 id="error-title" class="h2 font-black text-slate-800 text-3xl">Connection Lost</h3>
+                    <p id="error-msg" class="text-slate-500 mt-2 mb-6">Cannot reach the Hive backend. Make sure your server is running.</p>
+                    <a onclick="closeErrorScreen()" class="link_404">Try Again</a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="sos-countdown-overlay" class="hidden fixed inset-0 z-[999] bg-rose-900/90 backdrop-blur-md flex flex-col items-center justify-center p-4 text-white text-center">
+        <i class="fa-solid fa-triangle-exclamation text-8xl text-white mb-6 animate-pulse"></i>
+        <h1 class="text-5xl font-black mb-2 tracking-tighter uppercase">Broadcasting SOS</h1>
+        <p class="text-lg font-medium opacity-90 mb-10">Alerting <span id="sos-countdown-scope" class="font-black text-amber-300 uppercase">CITY</span> Network</p>
+        
+        <div class="relative w-48 h-48 flex items-center justify-center mb-10">
+            <svg class="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="transparent" stroke="rgba(255,255,255,0.2)" stroke-width="10"></circle>
+                <circle id="countdown-circle" cx="50" cy="50" r="45" fill="transparent" stroke="white" stroke-width="10" stroke-dasharray="283" stroke-dashoffset="0" style="transition: stroke-dashoffset 1s linear;"></circle>
+            </svg>
+            <span id="countdown-number" class="text-7xl font-black tabular-nums">5</span>
+        </div>
+        <button onclick="cancelSOSCountdown()" class="bg-white text-rose-700 font-black text-xl px-12 py-5 rounded-full shadow-2xl hover:scale-105 transition-transform active:scale-95">CANCEL EMERGENCY</button>
+    </div>
+
+    <div id="setup-layer" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-100/90">
+        <div class="relative w-full max-w-xl glass-effect rounded-[3rem] shadow-2xl p-8 pt-12 border border-white/50 overflow-visible">
+            
+            <button id="back-btn" onclick="handleBack()" class="hidden absolute top-6 left-6 text-slate-400 hover:text-amber-600 flex items-center gap-2 font-bold text-sm transition-colors">
+                <i class="fa-solid fa-circle-arrow-left text-lg"></i> Back
+            </button>
+            
+            <div id="auth-container">
+                <div class="text-center mb-6">
+                    <div class="logo-container scale-90">
+                        <div class="wing wing-left shadow-sm"></div>
+                        <img src="https://cdn-icons-png.flaticon.com/512/517/517563.png" class="bee-body">
+                        <div id="auth-wing-right" class="wing wing-right shadow-sm dynamic-logo-wing"></div>
+                    </div>
+                    <h1 class="text-2xl font-black text-slate-900 mt-2 tracking-tight">Desi Hive</h1>
+                </div>
+                
+                <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                    <div id="signup-fields" class="hidden">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-3 mb-1 block">Full Name</label>
+                        <input type="text" id="reg-name" class="w-full bg-white border border-slate-100 rounded-xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-amber-400" placeholder="Rahul Sharma">
+                    </div>
+                    <input type="email" id="reg-email" required class="w-full bg-white border border-slate-100 rounded-xl px-5 py-3 text-sm outline-none" placeholder="name@gmail.com">
+                    <div class="relative">
+                        <input type="password" id="reg-pass" required class="w-full bg-white border border-slate-100 rounded-xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-amber-400 pr-12" placeholder="••••••••">
+                        <button type="button" onclick="togglePass()" class="absolute right-4 top-3 text-slate-400"><i id="eye" class="fa-solid fa-eye"></i></button>
+                    </div>
+                    <button type="submit" id="main-btn" class="w-full desi-gradient text-white py-4 rounded-xl font-bold shadow-xl mt-2 uppercase tracking-widest text-xs active:scale-95 transition-transform">Continue</button>
+                </form>
+                <button onclick="toggleMode()" class="w-full text-center mt-6 text-xs text-amber-600 font-black hover:underline" id="mode-toggle">Create New Account</button>
+            </div>
+
+            <div id="otp-container" class="hidden text-center py-4">
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Verify Identity</h2>
+                <p class="text-slate-500 text-xs mt-2 px-4">OTP sent to <span id="display-gmail" class="text-amber-600 font-black underline"></span>.</p>
+                <div class="flex justify-center gap-3 my-10">
+                    <input type="text" maxlength="1" class="otp-input" oninput="otpAutoJump(this, 0)" onkeydown="otpBackJump(event, 0)" onpaste="handleOtpPaste(event)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="otpAutoJump(this, 1)" onkeydown="otpBackJump(event, 1)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="otpAutoJump(this, 2)" onkeydown="otpBackJump(event, 2)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="otpAutoJump(this, 3)" onkeydown="otpBackJump(event, 3)">
+                </div>
+                <p id="otp-error-hint" class="hidden text-[10px] font-bold text-red-500 uppercase mb-4 tracking-tighter">Invalid OTP.</p>
+                <button onclick="verifyOTP()" class="w-full desi-gradient text-white py-4 rounded-xl font-bold mb-4 uppercase text-xs tracking-widest">Verify Code</button>
+                <div class="mt-4">
+                    <p id="resend-timer-text" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Resend available in <span id="timer-count" class="text-amber-600">30</span>s</p>
+                    <button id="resend-btn" onclick="handleResendOTP()" disabled class="text-xs font-black text-slate-300 cursor-not-allowed transition-colors mt-1">Resend OTP</button>
+                </div>
+            </div>
+
+            <div id="verified-popup" class="hidden text-center py-10">
+                <i class="fa-solid fa-circle-check text-7xl text-emerald-500 animate-bounce"></i>
+                <h2 class="text-3xl font-black text-slate-900 mt-6 tracking-tight">Verified Confirmed!</h2>
+                <p class="text-slate-500 text-sm mt-2 font-medium">Redirecting to profile setup...</p>
+            </div>
+
+            <div id="profile-container" class="hidden">
+                <div class="text-center mb-6">
+                    <div class="logo-container scale-75 mb-2">
+                        <div class="wing wing-left shadow-sm"></div>
+                        <img src="https://cdn-icons-png.flaticon.com/512/517/517563.png" class="bee-body">
+                        <div class="wing wing-right shadow-sm dynamic-logo-wing"></div>
+                    </div>
+                    <h2 class="text-xl font-black text-slate-900 border-b pb-2 tracking-tight">Complete Profile</h2>
+                </div>
+                <form onsubmit="handleProfileFinal(event, false)" class="space-y-4 max-h-[55vh] overflow-y-auto px-1 custom-scroll">
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="p-name" placeholder="Full Name" required class="bg-slate-50 border rounded-xl px-4 py-2.5 text-sm outline-none">
+                        <input type="date" id="p-dob" required class="bg-slate-50 border rounded-xl px-4 py-2.5 text-sm outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <select id="p-gender" required class="bg-slate-50 border rounded-xl px-4 py-2.5 text-sm outline-none">
+                            <option value="">Gender</option><option>Male</option><option>Female</option><option>Other</option>
+                        </select>
+                        <div class="relative">
+                            <input type="text" id="edu-search" oninput="filterData('edu')" placeholder="Education..." required class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm outline-none">
+                            <div id="edu-list" class="suggestions-list hidden"></div>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="prof-search" oninput="filterData('prof')" placeholder="Search Profession..." required class="w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-sm outline-none">
+                        <div id="prof-list" class="suggestions-list hidden"></div>
+                    </div>
+                    <div class="p-4 bg-amber-50/50 rounded-2xl space-y-3 relative border border-amber-100 shadow-inner">
+                        <div class="flex justify-between items-center px-1 mb-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Location Setup</label>
+                            <button type="button" onclick="autoDetectLocation()" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition flex items-center gap-1 shadow-sm">
+                                <i class="fa-solid fa-location-crosshairs"></i> Auto-Detect
+                            </button>
+                        </div>
+                        <select id="country-select" onchange="countryPicked()" required class="w-full bg-white border border-amber-200 rounded-lg px-4 py-2 text-sm outline-none font-bold text-slate-800">
+                            <option value="">Loading Countries...</option>
+                        </select>
+                        <div class="relative">
+                            <input type="text" id="state-search" oninput="filterLoc('state')" placeholder="Search States..." disabled class="w-full bg-white border border-amber-200 rounded-lg px-4 py-2 text-sm outline-none disabled:opacity-50">
+                            <div id="state-list" class="suggestions-list hidden custom-scroll"></div>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="city-search" oninput="filterLoc('city')" placeholder="Search City/District..." disabled class="w-full bg-white border border-amber-200 rounded-lg px-4 py-2 text-sm outline-none disabled:opacity-50">
+                            <div id="city-list" class="suggestions-list hidden custom-scroll"></div>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full desi-gradient text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest shadow-xl active:scale-95">Enter Dashboard</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-dashboard" class="hidden flex h-screen overflow-hidden">
+        
+        <aside class="w-64 sidebar-gradient border-r border-slate-200 flex flex-col p-6 sticky top-0">
+            <div class="flex items-center justify-between mb-10 pr-2">
+                <div class="flex items-center gap-2">
+                    <img src="https://flagcdn.com/w40/in.png" class="flag-icon shadow-sm" alt="India Flag">
+                    <span class="text-blue-600 font-extrabold text-xl tracking-tighter">Desi Hive</span>
+                </div>
+                <img id="sidebar-source-flag" src="https://flagcdn.com/w40/in.png" class="flag-icon shadow-sm" alt="Settled Country">
+            </div>
+            
+            <div class="flex items-center gap-3 mb-8 p-2 group relative">
+                <div class="relative cursor-pointer" onclick="openAvatarModal()">
+                    <img id="main-profile-pic" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-12 h-12 rounded-full border-2 border-white shadow-md hover:scale-105 transition-transform object-cover" alt="Profile">
+                    <div class="absolute -bottom-1 -right-1 bg-blue-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[8px] border-2 border-white">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+                </div>
+                <div class="overflow-hidden">
+                    <h4 id="sidebar-user-name" class="font-bold text-sm truncate w-32">User</h4>
+                    <p id="sidebar-user-loc" class="text-[10px] text-slate-400 truncate w-32">City, State</p>
+                </div>
+            </div>
+            
+            <nav class="space-y-1 flex-1">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Main Menu</p>
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center justify-between active-nav px-4 py-3 rounded-xl text-sm font-bold shadow-lg transition">
+                    <div class="flex items-center gap-3"><i class="fa-solid fa-house w-5"></i> Dashboard</div>
+                </button>
+                <button onclick="switchTab('jobs')" id="nav-jobs" class="w-full flex items-center justify-between text-slate-500 hover:bg-slate-50 px-4 py-3 rounded-xl text-sm font-medium transition">
+                    <div class="flex items-center gap-3"><i class="fa-solid fa-briefcase w-5"></i> Jobs</div>
+                    <span id="badge-jobs" class="bg-blue-100 text-blue-700 py-0.5 px-2.5 rounded-full text-[10px] font-black shadow-sm hidden">0</span>
+                </button>
+                <button onclick="switchTab('gatherings')" id="nav-gatherings" class="w-full flex items-center justify-between text-slate-500 hover:bg-slate-50 px-4 py-3 rounded-xl text-sm font-medium transition">
+                    <div class="flex items-center gap-3"><i class="fa-solid fa-people-group w-5"></i> Gatherings</div>
+                    <span id="badge-events" class="bg-emerald-100 text-emerald-700 py-0.5 px-2.5 rounded-full text-[10px] font-black shadow-sm hidden">0</span>
+                </button>
+                <button onclick="switchTab('bazaar')" id="nav-bazaar" class="w-full flex items-center justify-between text-slate-500 hover:bg-slate-50 px-4 py-3 rounded-xl text-sm font-medium transition">
+                    <div class="flex items-center gap-3"><i class="fa-solid fa-shop w-5"></i> Desi Bazaar</div>
+                    <span id="badge-bazaar" class="bg-orange-100 text-orange-700 py-0.5 px-2.5 rounded-full text-[10px] font-black shadow-sm hidden">0</span>
+                </button>
+                <button onclick="switchTab('chats')" id="nav-chats" class="w-full flex items-center justify-between text-slate-500 hover:bg-slate-50 px-4 py-3 rounded-xl text-sm font-medium transition">
+                    <div class="flex items-center gap-3"><i class="fa-solid fa-comments w-5"></i> All Chats</div>
+                    <span id="badge-chats" class="bg-purple-100 text-purple-700 py-0.5 px-2.5 rounded-full text-[10px] font-black shadow-sm hidden">0</span>
+                </button>
+                
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-8 mb-4">Quick Access</p>
+                <button onclick="switchTab('blood')" id="nav-blood" class="w-full flex items-center gap-3 text-rose-600 hover:bg-rose-50 px-4 py-3 rounded-xl text-sm font-bold transition"><i class="fa-solid fa-hand-holding-medical w-5"></i> Rakt Sewa</button>
+                <button onclick="switchTab('donation')" id="nav-donation" class="w-full flex items-center gap-3 text-emerald-500 hover:bg-emerald-50 px-4 py-3 rounded-xl text-sm font-bold transition"><i class="fa-solid fa-hand-holding-heart w-5"></i> Donations</button>
+            </nav>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-10 bg-slate-50 pb-20">
+            
+            <div id="sos-active-banner" class="hidden mb-8 p-5 rounded-3xl shadow-xl text-white transition-all">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-white/20 p-3 rounded-xl"><i class="fa-solid fa-triangle-exclamation text-3xl animate-pulse"></i></div>
+                        <div>
+                            <span id="sos-banner-title" class="block font-black text-xs uppercase tracking-widest">Emergency Broadcast Active</span>
+                            <span id="sos-banner-msg" class="text-sm font-bold opacity-90 leading-tight">Help requested.</span>
+                        </div>
+                    </div>
+                    <button onclick="deactivateSOS()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/40">Dismiss</button>
+                </div>
+                <div id="sos-map-container" class="w-full h-48 bg-slate-100 rounded-xl border-2 border-white/20 z-0 relative z-10"></div>
+            </div>
+
+            <div id="content-dashboard" class="tab-content">
+                <div id="dashboard-home-view">
+                    <header class="flex justify-between items-center mb-8">
+                        <div><h1 class="text-2xl font-extrabold text-slate-800">My Community Hoods</h1><p class="text-slate-400 text-sm italic">Connect at every level</p></div>
+                        <button onclick="openPostModal()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2"><i class="fa-solid fa-plus"></i> Post Update</button>
+                    </header>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                        <div class="bg-white rounded-3xl overflow-hidden card-shadow border border-slate-100 group">
+                            <div class="bg-orange-500 p-6 text-white min-h-[140px] relative"><div class="bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-flag"></i></div><h2 class="text-lg font-extrabold">Country Hood</h2><p id="card-country-text" class="text-orange-50 text-[11px] mt-1 opacity-90"></p></div>
+                            <div class="grid grid-cols-4 p-4 gap-2">
+                                <button onclick="openHoodFilter('country', 'jobs')" class="flex flex-col items-center p-2 rounded-xl hover:bg-slate-50 transition"><i class="fa-solid fa-briefcase text-blue-500 text-lg"></i><span class="text-[10px] font-bold mt-1 text-slate-500">Jobs</span></button>
+                                <button onclick="openHoodFilter('country', 'gatherings')" class="flex flex-col items-center p-2 rounded-xl hover:bg-slate-50 transition"><i class="fa-solid fa-house-chimney text-green-500 text-lg"></i><span class="text-[10px] font-bold mt-1 text-slate-500">Events</span></button>
+                                <button onclick="triggerHoodSOS('country')" class="flex flex-col items-center p-2 rounded-xl hover:bg-slate-50 transition"><i class="fa-solid fa-circle-exclamation text-red-500 text-lg"></i><span class="text-[10px] font-bold mt-1 text-red-600">SOS</span></button>
+                                <button onclick="openHoodFilter('country', 'donation')" class="flex flex-col items-center p-2 rounded-xl hover:bg-slate-50 transition"><i class="fa-solid fa-hand-holding-heart text-emerald-500 text-lg"></i><span class="text-[10px] font-bold mt-1 text-slate-500">Donate</span></button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-3xl overflow-hidden card-shadow border border-slate-100 group">
+                            <div class="bg-blue-600 p-6 text-white min-h-[140px] relative"><div class="bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-map"></i></div><h2 class="text-lg font-extrabold">State Hood</h2><p id="card-state-text" class="text-blue-50 text-[11px] mt-1 opacity-90"></p></div>
+                            <div class="grid grid-cols-4 p-4 gap-2">
+                                <button onclick="openHoodFilter('state', 'jobs')" class="flex flex-col items-center p-2 rounded-xl hover:bg-slate-50 transition"><i class="fa-solid fa-briefcase text-blue-500 text-lg"></i><span class="text-[10px] font-bold mt-1 text-slate-500">Jobs</span></button>
+                                <button onclick="openHoodFilter('state', 'gatherings')" class="flex flex-col items-center p-2 rounded-xl hover:bg-slate-50 transition"><i class="fa-solid fa-house-chimney text-green-500 text-lg"></i><span class="text-[10px] font-bold mt-1 text-slate-500">Events</span></button>
+                                <button onclick="triggerHoodSOS('state')" class="flex flex-col items-center p-2 rounded-xl hover:bg-slate-50 transition"><i class="fa-solid fa-circle-exclamation text-red-500 text-lg"></i><span class="text-[10px] font-bold mt-1 text-red-600">SOS</span></button>
+                                <button onclick="openHoodFilter('state', 'donation')" class="flex flex-col items-center p-2 rounded-xl hover:bg-slate-50 transition"><i class="fa-solid fa-hand-holding-heart text-emerald-500 text-lg"></i><span class="text-[10px] font-bold mt-1 text-slate-500">Donate</span></button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-3xl overflow-hidden card-shadow border-2 border-blue-600 group">
+                            <div class="bg-purple-600 p-6 text-white min-h-[140px] relative"><div class="bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-location-dot"></i></div><h2 class="text-lg font-extrabold">Neighborhood</h2><p id="card-city-text" class="text-purple-50 text-[11px] mt-1 opacity-90"></p></div>
+                            <div class="grid grid-cols-4 p-4 gap-2">
+                                <button onclick="openHoodFilter('city', 'jobs')" class="flex flex-col items-center p-2 rounded-xl hover:bg-slate-50 transition"><i class="fa-solid fa-briefcase text-blue-500 text-lg"></i><span class="text-[10px] font-bold mt-1 text-slate-500">Jobs</span></button>
+                                <button onclick="openHoodFilter('city', 'gatherings')" class="flex flex-col items-center p-2 rounded-xl hover:bg-slate-50 transition"><i class="fa-solid fa-house-chimney text-green-500 text-lg"></i><span class="text-[10px] font-bold mt-1 text-slate-500">Events</span></button>
+                                <button onclick="triggerHoodSOS('city')" class="flex flex-col items-center p-2 rounded-xl hover:bg-slate-50 transition"><i class="fa-solid fa-circle-exclamation text-red-500 text-lg"></i><span class="text-[10px] font-bold mt-1 text-red-600">SOS</span></button>
+                                <button onclick="openHoodFilter('city', 'donation')" class="flex flex-col items-center p-2 rounded-xl hover:bg-slate-50 transition"><i class="fa-solid fa-hand-holding-heart text-emerald-500 text-lg"></i><span class="text-[10px] font-bold mt-1 text-slate-500">Donate</span></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <section class="bg-white rounded-[2.5rem] p-8 border border-slate-100 card-shadow h-[500px] flex flex-col">
+                            <div class="flex justify-between items-center mb-6 flex-shrink-0"><h3 class="text-lg font-black text-slate-800 tracking-tight"><i class="fa-solid fa-rss text-amber-500 mr-2"></i>Local Buzz</h3><span id="news-location-tag" class="text-[10px] font-bold uppercase bg-slate-100 px-3 py-1 rounded-full text-slate-500 truncate max-w-[150px]">Your Area</span></div>
+                            <div id="news-feed-container" class="flex-1 overflow-y-auto pr-2 custom-scroll space-y-4"><p class="text-xs text-slate-400 italic text-center py-20">Synchronizing news stream...</p></div>
+                        </section>
+                        <section class="bg-white rounded-[2.5rem] p-8 border border-slate-100 card-shadow">
+                            <div class="flex justify-between items-center mb-8 text-lg font-black text-slate-800 tracking-tight">Recent Activity</div>
+                            <div id="activity-feed" class="space-y-6">
+                                <div class="flex gap-4 items-start p-2 hover:bg-slate-50 rounded-2xl transition"><img src="https://i.pravatar.cc/150?u=priya" class="w-11 h-11 rounded-full border-2 border-white shadow-sm" alt="User"><div><p class="text-[13px] font-bold text-slate-800">Priya Sharma <span class="text-slate-400 font-normal ml-1">posted in Jobs</span></p><p class="text-sm font-medium text-slate-600 mt-1 leading-relaxed">Looking for a Senior React Developer.</p></div></div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <div id="hood-filtered-view" class="hidden">
+                    <header class="flex justify-between items-center mb-8">
+                        <div>
+                            <button onclick="closeHoodFilter()" class="text-slate-400 font-bold mb-2 flex items-center gap-2 hover:text-blue-600 transition"><i class="fa-solid fa-arrow-left-long"></i> Back to Dashboard</button>
+                            <h1 id="hood-filter-title" class="text-3xl font-black text-slate-900 tracking-tight uppercase">Hood Results</h1>
+                            <p id="hood-filter-subtitle" class="text-blue-600 text-sm italic font-bold">Showing items for your selected region</p>
+                        </div>
+                        <div id="hood-filter-actions"></div>
+                    </header>
+                    <div id="hood-filter-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </div>
+            </div>
+
+            <div id="content-jobs" class="tab-content hidden-screen">
+                <div id="job-selection-view">
+                    <h1 class="text-3xl font-black text-slate-900 mb-2">Hiring Hive</h1>
+                    <p class="text-slate-400 text-sm mb-12 italic">Join the workforce or hire from the community.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        <button onclick="showJoinHive()" class="bg-white border-2 border-slate-100 p-10 rounded-[3rem] text-center hover:border-blue-500 transition-all group shadow-sm"><div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-user-check text-3xl"></i></div><h3 class="text-2xl font-black text-slate-800">JOIN HIVE</h3><p class="text-sm text-slate-400 mt-2 font-medium">Find jobs posted by nearby users.</p></button>
+                        <button onclick="showHireHive()" class="bg-white border-2 border-slate-100 p-10 rounded-[3rem] text-center hover:border-amber-500 transition-all group shadow-sm"><div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-briefcase text-3xl"></i></div><h3 class="text-2xl font-black text-slate-800">HIRE HIVE</h3><p class="text-sm text-slate-400 mt-2 font-medium">Post work to find community talent.</p></button>
+                    </div>
+                </div>
+                
+                <div id="join-hive-view" class="hidden">
+                    <div class="flex justify-between items-center mb-8">
+                        <button onclick="backToJobSelection()" class="text-slate-400 font-bold flex items-center gap-2 hover:text-blue-600 transition"><i class="fa-solid fa-arrow-left-long"></i> Back</button>
+                        <div class="flex items-center gap-3">
+                            <button onclick="showHireHive()" class="bg-amber-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm hover:bg-amber-600 transition">Post Job</button>
+                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Filter:</span>
+                            <select id="job-prof-filter" onchange="renderJobsFiltered()" class="bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold outline-none"><option value="all">All Specialties</option><option>Engineer</option><option>Doctor</option><option>Student</option><option>Delivery</option><option>Business</option><option>Chef</option></select>
+                        </div>
+                    </div>
+                    <div id="job-board-feed" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </div>
+                
+                <div id="hire-hive-view" class="hidden max-w-2xl mx-auto">
+                    <button onclick="backToJobSelection()" class="text-slate-400 font-bold mb-8 flex items-center gap-2 hover:text-amber-600 transition"><i class="fa-solid fa-arrow-left-long"></i> Back</button>
+                    <div class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
+                        <h2 class="text-2xl font-black mb-8 text-slate-800 uppercase italic">Post Community Job</h2>
+                        <form onsubmit="handlePostJob(event)" class="space-y-4">
+                            <input type="text" id="j-title-in" placeholder="Job Role Title" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium outline-none focus:border-amber-400">
+                            <div class="grid grid-cols-2 gap-4">
+                                <select id="j-cat-in" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium"><option value="">Category</option><option>Engineer</option><option>Doctor</option><option>Student</option><option>Delivery</option><option>Business</option></select>
+                                <input type="text" id="j-sal-in" placeholder="Monthly Salary" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium">
+                            </div>
+                            <button type="submit" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all">Broadcast to neighborhood</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div id="job-apply-view" class="hidden max-w-2xl mx-auto">
+                    <button onclick="backToJoinHive()" class="text-slate-400 font-bold mb-8 flex items-center gap-2 hover:text-blue-600 transition"><i class="fa-solid fa-arrow-left-long"></i> Back to Feed</button>
+                    <div class="apply-card bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
+                        <div id="apply-detail-content"></div>
+                        <hr class="my-8 border-slate-100">
+                        <form onsubmit="handleFinalSubmit(event)" class="space-y-6">
+                            <div>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Upload Resume/CV</label>
+                                <div class="relative group">
+                                    <input type="file" id="cv-upload" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                    <div class="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center group-hover:border-blue-400 transition-all bg-slate-50"><i class="fa-solid fa-file-pdf text-3xl text-slate-300 group-hover:text-blue-500 mb-2"></i><p id="cv-name" class="text-xs font-bold text-slate-500">Drag & Drop or Click to Upload</p></div>
+                                </div>
+                            </div>
+                            <textarea placeholder="Add a short note to the poster..." class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm outline-none focus:border-blue-400 h-24"></textarea>
+                            <button type="submit" class="w-full desi-gradient text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95">Submit Application</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-gatherings" class="tab-content hidden-screen">
+                <header class="flex justify-between items-center mb-8">
+                    <div><h1 class="text-3xl font-black text-slate-900 tracking-tight">Gatherings</h1><p class="text-slate-400 text-sm italic">Connect with neighbors in <span id="event-city-name" class="text-blue-600 font-bold">City</span></p></div>
+                    <button onclick="openEventModal()" class="bg-emerald-600 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg hover:bg-emerald-700 transition-all flex items-center gap-2"><i class="fa-solid fa-calendar-plus"></i> Host Event</button>
+                </header>
+                <div id="events-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8"></div>
+            </div>
+
+            <div id="content-chats" class="tab-content hidden-screen flex flex-col h-[calc(100vh-140px)]">
+                <div class="flex flex-1 bg-white rounded-[3rem] shadow-xl overflow-hidden border border-slate-100">
+                    <aside class="w-1/3 border-r border-slate-100 flex flex-col bg-slate-50/50">
+                        <div class="p-6 border-b border-slate-100 bg-white">
+                            <h2 class="text-xl font-black text-slate-800 tracking-tight mb-4">Messages</h2>
+                            
+                            <div class="relative">
+                                <div class="relative flex items-center">
+                                    <i class="fa-solid fa-search absolute left-4 text-slate-400"></i>
+                                    <input type="text" id="chat-search-bar" placeholder="Search neighbors..." class="w-full bg-slate-100 border-none rounded-2xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                </div>
+                                <div id="chat-search-results" class="chat-search-list">
+                                    </div>
+                            </div>
+                        </div>
+                        <div id="chat-list-container" class="flex-1 overflow-y-auto custom-scroll p-2 space-y-1"></div>
+                    </aside>
+                    <section class="flex-1 flex flex-col bg-white">
+                        <div id="no-chat-selected" class="flex-1 flex flex-col items-center justify-center text-center p-10"><i class="fa-solid fa-comments text-4xl text-slate-200 mb-4"></i><h4 class="font-bold text-slate-800">Your Hive Conversations</h4><p class="text-xs text-slate-400 mt-2 max-w-xs">Select a neighbor or a group hood to start chatting.</p></div>
+                        <div id="active-chat-interface" class="hidden flex-1 flex flex-col overflow-hidden">
+                            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-white px-6">
+                                <div class="flex items-center gap-3">
+                                    <img id="active-chat-avatar" src="" class="w-10 h-10 rounded-full object-cover">
+                                    <div>
+                                        <h4 id="active-chat-title" class="font-bold text-sm text-slate-800"></h4>
+                                        <p id="active-chat-status" class="text-[10px] text-emerald-500 font-bold hidden">Online</p>
+                                    </div>
+                                </div>
+                                <div id="chat-room-badge" class="hidden text-[10px] font-black uppercase px-3 py-1 rounded-full bg-slate-100 text-slate-500"></div>
+                            </div>
+                            <div id="messages-window" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/30 custom-scroll"></div>
+                            <div class="p-4 bg-white border-t border-slate-100">
+                                <form onsubmit="handleChatSendMsg(event)" class="flex items-center gap-3 px-2 relative">
+                                    <div class="relative group">
+                                        <button type="button" onclick="toggleAttachMenu()" class="text-slate-400 hover:text-blue-600"><i class="fa-solid fa-paperclip text-xl"></i></button>
+                                        <div id="attach-menu" class="hidden absolute bottom-14 left-0 bg-white border border-slate-100 shadow-2xl rounded-2xl p-2 w-48 z-50 attach-menu">
+                                            <button type="button" onclick="triggerChatFile('image/*')" class="w-full flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-600"><i class="fa-solid fa-image text-blue-500"></i> Photos</button>
+                                            <button type="button" onclick="triggerChatFile('.pdf,.doc,.docx')" class="w-full flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-600"><i class="fa-solid fa-file-lines text-amber-500"></i> Documents</button>
+                                            <button type="button" onclick="sendChatLoc()" class="w-full flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-600"><i class="fa-solid fa-location-dot text-rose-500"></i> Location</button>
+                                        </div>
+                                    </div>
+                                    <input type="file" id="chat-file-input" class="hidden" onchange="handleChatFileSelect(event)">
+                                    <input type="text" id="chat-input" placeholder="Type a message..." class="flex-1 bg-slate-100 border-none rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <button type="submit" class="bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-all"><i class="fa-solid fa-paper-plane"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div id="content-bazaar" class="tab-content hidden-screen">
+                <header class="flex justify-between items-center mb-8">
+                    <div><h1 class="text-3xl font-black text-slate-900 tracking-tight">Desi Bazaar</h1><p class="text-slate-400 text-sm italic">Buy, Sell & Barter within your Hood</p></div>
+                    <button onclick="openSellModal()" class="bg-amber-500 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg hover:bg-amber-600 transition-all flex items-center gap-2"><i class="fa-solid fa-camera"></i> Sell Item</button>
+                </header>
+                <div class="flex gap-3 mb-8 overflow-x-auto pb-2 custom-scroll">
+                    <button onclick="filterBazaar('All')" class="px-5 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold whitespace-nowrap">All</button>
+                    <button onclick="filterBazaar('Furniture')" class="px-5 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold whitespace-nowrap hover:bg-slate-50">Furniture</button>
+                    <button onclick="filterBazaar('Electronics')" class="px-5 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold whitespace-nowrap hover:bg-slate-50">Electronics</button>
+                    <button onclick="filterBazaar('Food')" class="px-5 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold whitespace-nowrap hover:bg-slate-50">Home Food</button>
+                    <button onclick="filterBazaar('Books')" class="px-5 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold whitespace-nowrap hover:bg-slate-50">Books</button>
+                </div>
+                <div id="bazaar-grid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            </div>
+
+            <div id="content-blood" class="tab-content hidden-screen">
+                <div id="blood-selection-view">
+                    <h1 class="text-3xl font-black text-slate-900 mb-2">Rakt Sewa <span class="text-rose-600"><i class="fa-solid fa-heart-pulse"></i></span></h1>
+                    <p class="text-slate-400 text-sm mb-12 italic">The community blood donor network.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        <button onclick="showBloodRequest()" class="bg-white border-2 border-slate-100 p-10 rounded-[3rem] text-center hover:border-rose-500 transition-all group shadow-sm">
+                            <div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-droplet text-3xl"></i></div>
+                            <h3 class="text-2xl font-black text-slate-800">REQUEST BLOOD</h3>
+                            <p class="text-sm text-slate-400 mt-2 font-medium">Find a donor in your neighborhood.</p>
+                        </button>
+                        <button onclick="showBloodDonate()" class="bg-white border-2 border-slate-100 p-10 rounded-[3rem] text-center hover:border-emerald-500 transition-all group shadow-sm">
+                            <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-hand-holding-heart text-3xl"></i></div>
+                            <h3 class="text-2xl font-black text-slate-800">DONATE BLOOD</h3>
+                            <p class="text-sm text-slate-400 mt-2 font-medium">Register yourself to save lives.</p>
+                        </button>
+                    </div>
+                </div>
+                <div id="blood-donate-view" class="hidden max-w-2xl mx-auto">
+                    <button onclick="backToBloodSelection()" class="text-slate-400 font-bold mb-8 flex items-center gap-2 hover:text-emerald-600 transition"><i class="fa-solid fa-arrow-left-long"></i> Back</button>
+                    <div class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
+                        <h2 class="text-2xl font-black mb-8 text-slate-800 uppercase italic">Register as a Donor</h2>
+                        <form onsubmit="handleBloodDonate(event)" class="space-y-4">
+                            <input type="text" id="bd-name" readonly class="w-full bg-slate-100 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium outline-none text-slate-500 cursor-not-allowed">
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="number" id="bd-age" placeholder="Age" required min="18" max="65" class="bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium focus:border-emerald-400 outline-none">
+                                <select id="bd-group" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium focus:border-emerald-400 outline-none"><option value="">Blood Group</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select>
+                            </div>
+                            <input type="tel" id="bd-phone" placeholder="Phone Number" required pattern="[0-9]{10}" title="10 digit mobile number" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium outline-none focus:border-emerald-400">
+                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all">Submit Registration</button>
+                        </form>
+                    </div>
+                </div>
+                <div id="blood-request-view" class="hidden">
+                    <div class="flex justify-between items-center mb-8">
+                        <button onclick="backToBloodSelection()" class="text-slate-400 font-bold flex items-center gap-2 hover:text-rose-600 transition"><i class="fa-solid fa-arrow-left-long"></i> Back</button>
+                        <div class="flex items-center gap-2 overflow-x-auto pb-2 custom-scroll max-w-2xl">
+                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest ml-4 mr-2">Filter:</span>
+                            <button onclick="filterBlood('All')" class="px-5 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-200">All</button>
+                            <button onclick="filterBlood('A+')" class="px-5 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition">A+</button>
+                            <button onclick="filterBlood('B+')" class="px-5 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition">B+</button>
+                            <button onclick="filterBlood('O+')" class="px-5 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition">O+</button>
+                            <button onclick="filterBlood('O-')" class="px-5 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition">O-</button>
+                            <button onclick="filterBlood('AB+')" class="px-5 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition">AB+</button>
+                        </div>
+                    </div>
+                    <div id="blood-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </div>
+                <div id="blood-request-form-view" class="hidden max-w-2xl mx-auto">
+                    <button onclick="backToBloodRequestGrid()" class="text-slate-400 font-bold mb-8 flex items-center gap-2 hover:text-rose-600 transition"><i class="fa-solid fa-arrow-left-long"></i> Back to Donors</button>
+                    <div class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
+                        <h2 class="text-2xl font-black mb-2 text-slate-800 uppercase italic">Request Blood</h2>
+                        <p id="br-donor-name" class="text-slate-500 font-bold mb-8 text-sm">Requesting from: <span class="text-rose-600">Donor Name</span></p>
+                        <form onsubmit="submitBloodRequest(event)" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Blood Group</label><input type="text" id="br-group" readonly class="w-full bg-slate-100 border-2 border-slate-100 rounded-2xl p-4 text-sm font-black text-rose-600 outline-none cursor-not-allowed"></div>
+                                <div><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Quantity Needed</label><input type="number" id="br-qty" placeholder="Units (e.g. 2)" required min="1" max="5" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium outline-none focus:border-rose-400"></div>
+                            </div>
+                            <div><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Hospital / Delivery Address</label><textarea id="br-address" placeholder="Full hospital address and room number..." required class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium focus:border-rose-400 outline-none h-24 custom-scroll"></textarea></div>
+                            <button id="br-submit-btn" type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all">Send Email Request</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-donation" class="tab-content hidden-screen">
+                <div class="flex justify-between items-end mb-8"><div><h1 class="text-3xl font-black text-slate-900 tracking-tight">Community Donations</h1><p class="text-slate-400 text-sm italic">Support your neighbors directly</p></div><div class="flex bg-slate-200 p-1 rounded-2xl"><button onclick="toggleFinView('active')" id="fin-tab-active" class="px-6 py-2 rounded-xl text-xs font-black uppercase transition-all bg-white text-slate-900 shadow-sm">Active</button><button onclick="toggleFinView('history')" id="fin-tab-history" class="px-6 py-2 rounded-xl text-xs font-black uppercase transition-all text-slate-500">History</button></div></div>
+                <div id="fin-view-active" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-6"><div><span class="bg-emerald-100 text-emerald-700 text-[10px] px-3 py-1 rounded-full font-black uppercase">Active Fund</span><h2 class="text-2xl font-black mt-2">Medical Emergency Fund</h2><p class="text-slate-400 text-xs mt-1">Beneficiary: Community Hospital Oxygen Project</p></div><i class="fa-solid fa-hand-holding-heart text-4xl text-emerald-600"></i></div>
+                        <div class="w-full bg-slate-100 h-6 rounded-full overflow-hidden mb-4 relative"><div id="fund-progress-bar" class="bg-emerald-500 h-full transition-all duration-1000" style="width: 70%"></div></div>
+                        <div class="flex justify-between text-sm font-bold mb-10"><span class="text-slate-500">Raised: <span id="raised-amount" class="text-slate-900 font-black">₹1,40,000</span></span><span class="text-slate-500">Goal: <span id="goal-amount-display" class="text-slate-900 font-black">₹2,00,000</span></span></div>
+                        <div class="bg-slate-50 p-6 rounded-[2rem] border-2 border-dashed border-slate-200"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-3 ml-2">Enter Contribution Amount</label><div class="flex gap-4"><div class="relative flex-1"><input type="number" id="contrib-amount" placeholder="Amount" class="w-full px-5 py-4 rounded-2xl border-none focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-lg"></div><button onclick="processContribution()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 rounded-2xl font-black uppercase text-xs transition-all active:scale-95 shadow-lg shadow-emerald-200">Donate</button></div></div>
+                    </div>
+                    <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"><h3 class="text-lg font-black text-slate-800 mb-6"><i class="fa-solid fa-award text-amber-500 mr-2"></i>Hive Heroes</h3><div id="contributor-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scroll"><div class="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl"><div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center font-bold text-emerald-600 text-xs">AS</div><div><p class="text-xs font-black">Ankit Sharma</p><p class="text-[10px] text-emerald-600 font-bold">₹5,000</p></div></div></div></div>
+                </div>
+                <div id="fin-view-history" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </div>
+            
+            <div id="content-sos" class="tab-content hidden-screen">
+                <button onclick="switchTab('dashboard')" class="text-slate-400 font-bold mb-4 flex items-center gap-2 hover:text-rose-600 transition"><i class="fa-solid fa-arrow-left-long"></i> Cancel & Back</button>
+                <div class="max-w-2xl mx-auto mt-2 bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100 relative overflow-hidden">
+                    <div class="text-center mb-10"><i class="fa-solid fa-circle-exclamation text-7xl text-rose-600 mb-4 animate-bounce"></i><h2 id="sos-triage-title" class="text-3xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">Emergency Triage</h2><p class="text-slate-500 text-sm mt-3">Select the nature of your emergency below.</p></div>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="relative"><input type="radio" name="sos-category" id="cat-medical" value="Medical Emergency" class="sos-radio hidden" checked><label for="cat-medical" class="sos-cat-btn flex flex-col items-center justify-center gap-2 p-5 rounded-2xl cursor-pointer font-bold text-slate-600"><i class="fa-solid fa-heart-pulse text-2xl text-rose-500"></i> <span class="text-xs">Medical/Health</span></label></div>
+                        <div class="relative"><input type="radio" name="sos-category" id="cat-fire" value="Fire Emergency" class="sos-radio hidden"><label for="cat-fire" class="sos-cat-btn flex flex-col items-center justify-center gap-2 p-5 rounded-2xl cursor-pointer font-bold text-slate-600"><i class="fa-solid fa-fire text-2xl text-orange-500"></i> <span class="text-xs">Fire Alert</span></label></div>
+                        <div class="relative"><input type="radio" name="sos-category" id="cat-safety" value="Safety Threat" class="sos-radio hidden"><label for="cat-safety" class="sos-cat-btn flex flex-col items-center justify-center gap-2 p-5 rounded-2xl cursor-pointer font-bold text-slate-600"><i class="fa-solid fa-shield-halved text-2xl text-blue-500"></i> <span class="text-xs">Safety/Crime</span></label></div>
+                        <div class="relative"><input type="radio" name="sos-category" id="cat-other" value="Assistance Request" class="sos-radio-orange hidden"><label for="cat-other" class="sos-cat-btn flex flex-col items-center justify-center gap-2 p-5 rounded-2xl cursor-pointer font-bold text-slate-600"><i class="fa-solid fa-circle-info text-2xl text-amber-500"></i> <span class="text-xs">Other / Urgent</span></label></div>
+                    </div>
+                    <input type="hidden" id="sos-scope-select" value="city">
+                    <div class="mb-8"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Emergency Message</label><textarea id="sos-input-msg" placeholder="Tell the hive what's happening (e.g. Grandma fainted, Flat 402)..." class="w-full bg-slate-50 border-2 border-slate-100 rounded-3xl p-5 text-sm font-medium focus:border-rose-400 outline-none transition-all h-24 custom-scroll"></textarea></div>
+                    <button onclick="startSOSCountdown()" class="w-full desi-gradient text-white py-6 rounded-[2rem] font-black text-lg shadow-2xl shadow-rose-200 active:scale-95 transition-all flex items-center justify-center gap-4"><i class="fa-solid fa-tower-broadcast animate-pulse"></i> INITIATE BROADCAST</button>
+                    <p class="text-center text-[10px] font-bold text-slate-400 uppercase mt-5 tracking-[0.2em]">Press only in real emergency</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="post-modal" class="hidden fixed inset-0 z-[400] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl"><h2 class="text-2xl font-black text-slate-800 mb-6 uppercase italic tracking-tight">Post an Update</h2><form onsubmit="handleCreatePost(event)" class="space-y-4"><textarea id="post-content" placeholder="What's happening in your hood?" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-3xl p-5 text-sm font-medium focus:border-blue-400 outline-none transition-all h-40 custom-scroll"></textarea><div class="flex gap-4 pt-4"><button type="button" onclick="closePostModal()" class="flex-1 py-4 text-slate-400 font-bold uppercase text-xs">Cancel</button><button type="submit" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg">Post to Hive</button></div></form></div>
+    </div>
+    
+    <div id="event-modal" class="hidden fixed inset-0 z-[400] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl"><h2 class="text-2xl font-black text-slate-800 mb-6 uppercase italic tracking-tight">Host a Gathering</h2><form onsubmit="handleCreateEvent(event)" class="space-y-4"><input type="text" id="e-title" placeholder="What's the occasion?" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm focus:border-emerald-400 outline-none"><div class="grid grid-cols-2 gap-4"><select id="e-type" class="bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm outline-none"><option>Sports</option><option>Social</option><option>Education</option><option>Cultural</option></select><input type="time" id="e-time" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm outline-none"></div><input type="text" id="e-loc" placeholder="Venue (e.g. Central Park)" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm focus:border-emerald-400 outline-none"><div class="flex gap-4 pt-4"><button type="button" onclick="closeEventModal()" class="flex-1 py-4 text-slate-400 font-bold uppercase text-xs">Cancel</button><button type="submit" class="flex-[2] bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg">Create Event</button></div></form></div>
+    </div>
+    <div id="view-event-modal" class="hidden fixed inset-0 z-[500] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl relative">
+            <button onclick="closeViewEventModal()" class="absolute top-6 right-8 text-slate-400 hover:text-rose-500 transition-colors"><i class="fa-solid fa-circle-xmark text-2xl"></i></button>
+            <div id="view-event-content">
+                </div>
+        </div>
+    </div>
+
+    <div id="avatar-modal" class="hidden fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl transition-all scale-in"><div class="flex justify-between items-center mb-6"><h3 class="text-xl font-black text-slate-900">Change Profile Picture</h3><button onclick="closeAvatarModal()" class="text-slate-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-circle-xmark text-2xl"></i></button></div><div class="mb-6 p-4 border-2 border-dashed border-slate-200 rounded-3xl text-center hover:border-blue-400 transition-all group bg-slate-50"><input type="file" id="user-upload" class="hidden" accept="image/*" onchange="handleFileUpload(event)"><label for="user-upload" class="cursor-pointer block"><i class="fa-solid fa-image text-3xl text-slate-300 group-hover:text-blue-500 mb-2"></i><p class="text-[11px] font-black text-slate-500 uppercase tracking-tighter">Upload from Gallery</p></label></div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 text-center">— OR CHOOSE DESIGNATION —</p><div class="grid grid-cols-3 gap-3 max-h-[250px] overflow-y-auto pr-1 custom-scroll"><div class="avatar-option p-3 rounded-2xl text-center cursor-pointer" onclick="updateFinalAvatar('pilot')"><img src="https://cdn-icons-png.flaticon.com/512/2115/2115916.png" class="w-12 h-12 mx-auto mb-1"><span class="text-[9px] font-black uppercase text-slate-400">Pilot</span></div><div class="avatar-option p-3 rounded-2xl text-center cursor-pointer" onclick="updateFinalAvatar('farmer')"><img src="https://cdn-icons-png.flaticon.com/512/2014/2014592.png" class="w-12 h-12 mx-auto mb-1"><span class="text-[9px] font-black uppercase text-slate-400">Farmer</span></div><div class="avatar-option p-3 rounded-2xl text-center cursor-pointer" onclick="updateFinalAvatar('lawyer')"><img src="https://cdn-icons-png.flaticon.com/512/3532/3532821.png" class="w-12 h-12 mx-auto mb-1"><span class="text-[9px] font-black uppercase text-slate-400">Lawyer</span></div><div class="avatar-option p-3 rounded-2xl text-center cursor-pointer" onclick="updateFinalAvatar('doctor')"><img src="https://cdn-icons-png.flaticon.com/512/3774/3774299.png" class="w-12 h-12 mx-auto mb-1"><span class="text-[9px] font-black uppercase text-slate-400">Doctor</span></div><div class="avatar-option p-3 rounded-2xl text-center cursor-pointer" onclick="updateFinalAvatar('police')"><img src="https://cdn-icons-png.flaticon.com/512/2561/2561118.png" class="w-12 h-12 mx-auto mb-1"><span class="text-[9px] font-black uppercase text-slate-400">Police</span></div><div class="avatar-option p-3 rounded-2xl text-center cursor-pointer" onclick="updateFinalAvatar('student')"><img src="https://cdn-icons-png.flaticon.com/512/3135/3135810.png" class="text-slate-400 w-12 h-12 mx-auto mb-1"><span class="text-[9px] font-black uppercase text-slate-400">Student</span></div><div class="avatar-option p-3 rounded-2xl text-center cursor-pointer" onclick="updateFinalAvatar('engineer')"><img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="w-12 h-12 mx-auto mb-1"><span class="text-[9px] font-black uppercase text-slate-400">Engineer</span></div><div class="avatar-option p-3 rounded-2xl text-center cursor-pointer" onclick="updateFinalAvatar('default')"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-12 h-12 mx-auto mb-1"><span class="text-[9px] font-black uppercase text-slate-400">Regular</span></div></div></div>
+    </div>
+
+    <div id="sell-modal" class="hidden fixed inset-0 z-[400] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl"><h2 class="text-2xl font-black text-slate-800 mb-6 uppercase italic tracking-tight">Sell an Item</h2><form onsubmit="handleSellItem(event)" class="space-y-4"><input type="text" id="b-title" placeholder="Item Name (e.g. Sofa)" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm focus:border-amber-400 outline-none"><div class="grid grid-cols-2 gap-4"><select id="b-cat" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm outline-none"><option value="">Category</option><option>Furniture</option><option>Electronics</option><option>Food</option><option>Books</option></select><input type="text" id="b-price" placeholder="Price (₹)" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm outline-none"></div><div class="flex gap-4 pt-4"><button type="button" onclick="closeSellModal()" class="flex-1 py-4 text-slate-400 font-bold uppercase text-xs">Cancel</button><button type="submit" class="flex-[2] bg-amber-500 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg">List Item</button></div></form></div>
+    </div>
+
+    <div id="otp-toast" class="toast-notification bg-slate-900 text-white px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl"><span class="text-xs font-bold tracking-wide">New code sent successfully!</span></div>
+    <audio id="siren-audio" src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" preload="auto"></audio><script>
+        const API_KEY = "3682dcf50eb9951d25a2fd6967c550739202f8752a9b5bb949552181746f51fc";
+        const NEWS_API_KEY = "pub_19eafc08ed94417da2dbcca48f569ad9";
+        
+        let states = [], cities = [], isSignUp = false, step = 'auth';
+        let globalCity = "Hyderabad", globalUser = "Guest User", globalState = "Telangana", globalCountryName = "India", globalCountryCode = "in", globalCurrency = "INR";
+        let countdown, timeLeft = 30;
+        let selectedCountryCode = ""; 
+
+        let currentUserLat = 17.4500; 
+        let currentUserLon = 78.3800; 
+        let sosMap = null, sosMarker = null, countdownInterval;
+
+        let hiveJobs = [ 
+            { title: "Senior React Developer", salary: "₹1,20,000", category: "Engineer", poster: "Cyber Hive Tech", level: "city", colony: "Koramangala", city: "Bengaluru", state: "Karnataka", country: "India" },
+            { title: "State Govt Clerk", salary: "₹35,000", category: "Business", poster: "Govt of TG", level: "state", colony: "Nampally", city: "Hyderabad", state: "Telangana", country: "India" },
+            { title: "Delivery Partner", salary: "₹22,000", category: "Delivery", poster: "Hive Express", level: "city", colony: "Madhapur", city: "Hyderabad", state: "Telangana", country: "India" },
+            { title: "Software Engineer", salary: "₹90,000", category: "Engineer", poster: "Tech Solutions", level: "city", colony: "Andheri East", city: "Mumbai", state: "Maharashtra", country: "India" },
+            { title: "Private Home Tutor", salary: "₹25,000", category: "Student", poster: "Mrs. Sharma", level: "city", colony: "Whitefield", city: "Bengaluru", state: "Karnataka", country: "India" }
+        ];
+
+        let communityEvents = [
+            { title: "Local Cricket Match", type: "Sports", time: "07:30 AM", loc: "Sector 4 Ground", attendees: 42, joined: false, level: "city", colony: "Gachibowli", city: "Hyderabad", state: "Telangana", country: "India" },
+            { title: "Tech Meetup", type: "Education", time: "10:00 AM", loc: "Town Hall", attendees: 85, joined: false, level: "city", colony: "Indiranagar", city: "Bengaluru", state: "Karnataka", country: "India" }
+        ];
+        
+        let communityDonations = [
+            { title: "Neighborhood CCTV Setup", goal: 50000, date: "Oct 2025", category: "Safety", contributors: 42, level: 'city', colony: "Kukatpally", city: "Hyderabad", state: "Telangana", country: "India" },
+            { title: "Orphanage Blankets Drive", goal: 15000, date: "Aug 2025", category: "Social", contributors: 120, level: 'city', colony: "Jayanagar", city: "Bengaluru", state: "Karnataka", country: "India" }
+        ];
+
+        let bazaarItems = [
+            { id: 1, title: "Study Table (Wooden)", price: "₹1,200", category: "Furniture", seller: "Ramesh Uncle", img: "https://images.unsplash.com/photo-1519643381401-22c77e60520e?w=200" },
+            { id: 2, title: "10th Grade Maths Books", price: "₹400", category: "Books", seller: "Priya S.", img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200" }
+        ];
+
+        let bloodDonors = [
+            { name: "Rahul S.", type: "O+", loc: "Koramangala, Bengaluru", phone: "+91 9876543210", age: 28 },
+            { name: "Priya M.", type: "A+", loc: "HSR Layout, Bengaluru", phone: "+91 9876543211", age: 31 },
+            { name: "Amit K.", type: "B+", loc: "Madhapur, Hyderabad", phone: "+91 9876543212", age: 24 }
+        ];
+        
+        let currentBloodRequestDonor = null;
+
+        let activeChatIdx = null;
+        
+        // --- ADDED ALL USERS FOR SEARCH AUTOCOMPLETE MOCK DATA ---
+        const allUsersDatabase = [
+            { id: 'u1', name: "Sujith Reddy", avatar: "https://i.pravatar.cc/150?u=sujith" },
+            { id: 'u2', name: "Surya", avatar: "https://i.pravatar.cc/150?u=surya" },
+            { id: 'u3', name: "Sumit Kumar", avatar: "https://i.pravatar.cc/150?u=sumit" },
+            { id: 'u4', name: "Suresh Babu", avatar: "https://i.pravatar.cc/150?u=suresh" },
+            { id: 'u5', name: "Rahul Sharma", avatar: "https://i.pravatar.cc/150?u=rahul" },
+            { id: 'u6', name: "Priya S.", avatar: "https://i.pravatar.cc/150?u=priya" },
+            { id: 'u7', name: "Ankit Sharma", avatar: "https://i.pravatar.cc/150?u=ankit" }
+        ];
+
+        // --- UPDATED CONVERSATIONS WITH DYNAMIC ROOMS ---
+        let conversations = []; // Will be populated dynamically after login based on location
+
+        function initializeLocationRooms() {
+            // These dynamic rooms connect users based on their selected country/state/city
+            conversations = [
+                // --- Segment 1: Rooms ---
+                { id: `room_country_${globalCountryName.toLowerCase()}`, name: `${globalCountryName} Hive`, type: "group", level: "country", avatar: "https://cdn-icons-png.flaticon.com/512/1041/1041916.png", lastMsg: "Welcome to the national hive!", time: "Global", messages: [], isRoom: true },
+                { id: `room_state_${globalState.toLowerCase()}`, name: `${globalState} Connect`, type: "group", level: "state", avatar: "https://cdn-icons-png.flaticon.com/512/1041/1041916.png", lastMsg: "State updates shared here.", time: "State", messages: [], isRoom: true },
+                { id: `room_city_${globalCity.toLowerCase()}`, name: `${globalCity} Watch`, type: "group", level: "city", avatar: "https://cdn-icons-png.flaticon.com/512/1041/1041916.png", lastMsg: "Security check completed.", time: "Local", messages: [], isRoom: true },
+                
+                // --- Segment 2: Personal Chats (Mock Initial Chats) ---
+                { id: 'u7', name: "Ankit Sharma", type: "personal", avatar: "https://i.pravatar.cc/150?u=ankit", lastMsg: "Is the study table still available?", time: "2h ago", messages: [] },
+                { id: 'u6', name: "Priya S.", type: "personal", avatar: "https://i.pravatar.cc/150?u=priya", lastMsg: "Thank you for the help!", time: "5h ago", messages: [] }
+            ];
+            renderChatList();
+        }
+
+        let currentRaised = 140000;
+        const goalAmount = 200000;
+
+        const avatarMap = {
+            pilot: 'https://cdn-icons-png.flaticon.com/512/2115/2115916.png',
+            farmer: 'https://cdn-icons-png.flaticon.com/512/2014/2014592.png',
+            lawyer: 'https://cdn-icons-png.flaticon.com/512/3532/3532821.png',
+            doctor: 'https://cdn-icons-png.flaticon.com/512/3774/3774299.png',
+            police: 'https://cdn-icons-png.flaticon.com/512/2561/2561118.png',
+            student: 'https://cdn-icons-png.flaticon.com/512/3135/3135810.png',
+            engineer: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+            default: 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
+        };
+
+        function updateFinalAvatar(role) {
+            const pic = document.getElementById('main-profile-pic');
+            if (pic && avatarMap[role]) {
+                pic.src = avatarMap[role];
+            }
+            closeAvatarModal();
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const pic = document.getElementById('main-profile-pic');
+                    if (pic) pic.src = e.target.result;
+                    closeAvatarModal();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function filterData() {}
+        function filterLoc() {}
+
+        function triggerServerError(title = "Look like you're lost", msg = "The page you are looking for is not available!") {
+            document.getElementById('error-title').innerText = title;
+            document.getElementById('error-msg').innerText = msg;
+            document.getElementById('error-404-screen').style.display = 'block';
+        }
+
+        function closeErrorScreen() { 
+            document.getElementById('error-404-screen').style.display = 'none'; 
+        }
+
+        function otpAutoJump(el, i) { 
+            if (el.value.length === 1 && i < 3) {
+                document.querySelectorAll('.otp-input')[i+1].focus(); 
+            }
+        }
+
+        function otpBackJump(event, i) { 
+            if (event.key === "Backspace" && event.target.value === "" && i > 0) {
+                document.querySelectorAll('.otp-input')[i-1].focus(); 
+            }
+        }
+        
+        function handleOtpPaste(event) { 
+            event.preventDefault(); 
+            const pasteData = (event.clipboardData || window.clipboardData).getData('text').slice(0, 4); 
+            const inputs = document.querySelectorAll('.otp-input'); 
+            if (/^\d+$/.test(pasteData)) { 
+                pasteData.split('').forEach((char, index) => { 
+                    if (inputs[index]) inputs[index].value = char; 
+                }); 
+                inputs[Math.min(pasteData.length, 3)].focus(); 
+            } 
+        }
+
+        function startResendTimer() { 
+            const btn = document.getElementById('resend-btn'); 
+            timeLeft = 30; 
+            btn.disabled = true; 
+            clearInterval(countdown); 
+            countdown = setInterval(() => { 
+                timeLeft--; 
+                document.getElementById('timer-count').innerText = timeLeft; 
+                if (timeLeft <= 0) { 
+                    clearInterval(countdown); 
+                    btn.disabled = false; 
+                    btn.classList.replace('text-slate-300', 'text-amber-600'); 
+                } 
+            }, 1000); 
+        }
+        
+        async function handleResendOTP() { 
+            const email = document.getElementById('reg-email').value; 
+            const btn = document.getElementById('resend-btn'); 
+            const originalText = btn.innerText; 
+            btn.innerText = "Sending..."; 
+            btn.disabled = true; 
+            try { 
+                const response = await fetch('/api/send-otp', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ email }) 
+                }); 
+                if (response.ok) { 
+                    startResendTimer(); 
+                    const toast = document.getElementById('otp-toast'); 
+                    toast.querySelector('span').innerText = "OTP was sent to your Gmail!"; 
+                    toast.classList.add('toast-active'); 
+                    setTimeout(() => toast.classList.remove('toast-active'), 3000); 
+                } else { 
+                    alert("Failed to resend OTP."); 
+                    btn.innerText = originalText; 
+                    btn.disabled = false; 
+                } 
+            } catch (err) { 
+                triggerServerError("Server Disconnected", "Failed to connect to the server."); 
+                btn.innerText = originalText; 
+                btn.disabled = false; 
+            } 
+        }
+
+        async function handleAuthSubmit(e) { 
+            e.preventDefault(); 
+            const email = document.getElementById('reg-email').value; 
+            const password = document.getElementById('reg-pass').value; 
+            document.getElementById('display-gmail').innerText = email; 
+            
+            if(!isSignUp) {
+                try { 
+                    const response = await fetch('/api/login', { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ email, password }) 
+                    }); 
+                    const result = await response.json();
+                    if (response.ok) { 
+                        globalUser = result.user.name; 
+                        globalCity = result.user.city || "Hyderabad"; 
+                        globalState = result.user.state || "Telangana"; 
+                        globalCountryName = result.user.country || "India"; 
+                        handleProfileFinal(e, true); 
+                    } else { 
+                        alert("❌ " + result.error); 
+                    }
+                } catch (error) { 
+                    triggerServerError("Connection Lost", "Cannot reach the Hive backend."); 
+                }
+            } else { 
+                const mainBtn = document.getElementById('main-btn'); 
+                const originalText = mainBtn.innerText; 
+                mainBtn.innerText = "SENDING OTP..."; 
+                mainBtn.disabled = true;
+                try { 
+                    const response = await fetch('/api/send-otp', { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ email }) 
+                    }); 
+                    const data = await response.json();
+                    if (response.ok) { 
+                        navigate('otp'); 
+                        startResendTimer(); 
+                        const toast = document.getElementById('otp-toast'); 
+                        toast.querySelector('span').innerText = "OTP was sent to your Gmail!"; 
+                        toast.classList.add('toast-active'); 
+                        setTimeout(() => toast.classList.remove('toast-active'), 3000); 
+                    } else { 
+                        alert("❌ " + (data.error || "Failed to send OTP")); 
+                    }
+                } catch (error) { 
+                    triggerServerError("Server Disconnected", "Failed to send OTP."); 
+                } finally { 
+                    mainBtn.innerText = originalText; 
+                    mainBtn.disabled = false; 
+                }
+            } 
+        }
+
+        async function verifyOTP() {
+            const inputs = document.querySelectorAll('.otp-input'); 
+            const otp = Array.from(inputs).map(i => i.value).join(''); 
+            const email = document.getElementById('reg-email').value; 
+            const errorHint = document.getElementById('otp-error-hint');
+            
+            if (otp.length < 4) { 
+                errorHint.textContent = "Please enter all 4 digits."; 
+                errorHint.classList.remove('hidden', 'text-emerald-500'); 
+                errorHint.classList.add('text-red-500'); 
+                return; 
+            }
+            
+            const verifyBtn = document.querySelector('button[onclick="verifyOTP()"]'); 
+            const originalText = verifyBtn.innerText; 
+            verifyBtn.innerText = "VERIFYING..."; 
+            verifyBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/verify-otp', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ email, otp }) 
+                }); 
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    errorHint.textContent = "HURRAY! Success!"; 
+                    errorHint.classList.remove('hidden', 'text-red-500'); 
+                    errorHint.classList.add('text-emerald-500');
+                    setTimeout(() => { 
+                        errorHint.classList.add('hidden'); 
+                        navigate('verified'); 
+                        setTimeout(() => { 
+                            navigate('profile'); 
+                            document.getElementById('p-name').value = document.getElementById('reg-name').value || "User"; 
+                        }, 1500); 
+                    }, 1000);
+                } else {
+                    errorHint.textContent = "Wrong OTP! Please try again."; 
+                    errorHint.classList.remove('hidden', 'text-emerald-500'); 
+                    errorHint.classList.add('text-red-500'); 
+                    inputs.forEach(input => input.classList.add('otp-error'));
+                    setTimeout(() => { 
+                        errorHint.classList.add('hidden'); 
+                        inputs.forEach(input => { input.value = ""; input.classList.remove('otp-error'); }); 
+                        inputs[0].focus(); 
+                    }, 1500);
+                }
+            } catch (error) { 
+                triggerServerError("Verification Failed", "Lost connection to the server."); 
+            } finally { 
+                verifyBtn.innerText = originalText; 
+                verifyBtn.disabled = false; 
+            }
+        }
+
+        function getEventColor(type) {
+            if(type === 'Sports') return 'bg-orange-100 text-orange-600';
+            if(type === 'Education') return 'bg-blue-100 text-blue-600';
+            if(type === 'Cultural') return 'bg-purple-100 text-purple-600';
+            return 'bg-emerald-100 text-emerald-600';
+        }
+
+        function openHoodFilter(selectedLevel, category) {
+            document.getElementById('dashboard-home-view').classList.add('hidden');
+            document.getElementById('hood-filtered-view').classList.remove('hidden');
+            
+            let locationName = selectedLevel === 'country' ? globalCountryName : (selectedLevel === 'state' ? globalState : globalCity);
+            document.getElementById('hood-filter-title').innerText = `${category} in ${locationName}`;
+            
+            const resultsContainer = document.getElementById('hood-filter-results');
+            const actionContainer = document.getElementById('hood-filter-actions');
+            resultsContainer.innerHTML = ''; 
+
+            if (category === 'jobs') {
+                actionContainer.innerHTML = `<button onclick="closeHoodFilter(); switchTab('jobs'); showHireHive();" class="bg-amber-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-amber-600 transition-all flex items-center gap-2"><i class="fa-solid fa-briefcase"></i> Post Job</button>`;
+            } else if (category === 'gatherings') {
+                actionContainer.innerHTML = `<button onclick="closeHoodFilter(); switchTab('gatherings'); openEventModal();" class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-emerald-700 transition-all flex items-center gap-2"><i class="fa-solid fa-calendar-plus"></i> Host Event</button>`;
+            } else {
+                actionContainer.innerHTML = '';
+            }
+
+            const strictMatchesLevel = (item) => {
+                if (selectedLevel === 'country') return item.country === globalCountryName; 
+                if (selectedLevel === 'state') return item.state === globalState; 
+                return item.city === globalCity; 
+            };
+            
+            if (category === 'jobs') {
+                const filteredJobs = hiveJobs.filter(strictMatchesLevel);
+                resultsContainer.innerHTML = filteredJobs.map((j) => {
+                    const realIndex = hiveJobs.indexOf(j);
+                    return `
+                    <div class="job-card-new">
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="bg-blue-50 text-blue-600 text-[9px] font-black px-3 py-1 rounded-md uppercase tracking-wider">${j.category}</span>
+                                <span class="text-emerald-600 font-bold text-sm">${j.salary}</span>
+                            </div>
+                            <h4 class="text-lg font-black text-slate-900 leading-tight mb-2">${j.title}</h4>
+                            <div class="flex items-center gap-1.5 text-xs font-bold text-slate-400 mb-4">
+                                <i class="fa-solid fa-location-dot text-slate-300"></i> ${j.colony}, ${j.city}
+                            </div>
+                            <p class="text-[10px] text-slate-400 font-bold mb-6">Posted by: <span class="text-blue-600">${j.poster}</span></p>
+                        </div>
+                        <button onclick="routeToJobFromFilter(${realIndex})" class="btn-apply-dark">Apply Now</button>
+                    </div>`;
+                }).join('');
+                
+                if(!filteredJobs.length) {
+                    resultsContainer.innerHTML = `<p class="col-span-full py-10 text-center text-slate-400 italic">No jobs found in ${locationName}.</p>`;
+                }
+            } 
+            else if (category === 'gatherings') {
+                const filteredEvents = communityEvents.filter(strictMatchesLevel);
+                resultsContainer.innerHTML = filteredEvents.map((ev) => {
+                    const realIndex = communityEvents.indexOf(ev);
+                    return `
+                    <div class="event-card-new">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-[9px] font-black uppercase px-4 py-1.5 rounded-full ${getEventColor(ev.type)}">${ev.type}</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">${ev.time}</span>
+                        </div>
+                           <h4 class="text-xl font-black text-slate-900 leading-tight mb-2 cursor-pointer hover:text-blue-600 transition-colors" onclick="openEventDetails(${realIndex})">${ev.title}</h4>                        <p class="text-xs font-bold text-slate-400 mb-6 flex items-center gap-1.5">
+                            <i class="fa-solid fa-location-dot text-slate-300"></i> ${formatLoc(selectedLevel, ev)}
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex -space-x-3">
+                                <img class="w-8 h-8 rounded-full border-2 border-white bg-slate-200" src="https://i.pravatar.cc/100?u=${realIndex+10}">
+                                <img class="w-8 h-8 rounded-full border-2 border-white bg-slate-200" src="https://i.pravatar.cc/100?u=${realIndex+20}">
+                                <div class="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[9px] font-black text-slate-500">+${ev.attendees}</div>
+                            </div>
+                            <button onclick="toggleJoinHoodFilter(${realIndex}, '${selectedLevel}')" class="btn-join-pill ${ev.joined ? 'active' : ''}">${ev.joined ? 'Joined' : 'Join'}</button>
+                        </div>
+                    </div>`;
+                }).join('');
+                
+                if(!filteredEvents.length) {
+                    resultsContainer.innerHTML = `<p class="col-span-full py-10 text-center text-slate-400 italic">No events found in ${locationName}.</p>`;
+                }
+            }
+            else if (category === 'donation') {
+                const filteredFunds = communityDonations.filter(strictMatchesLevel);
+                resultsContainer.innerHTML = filteredFunds.map(fund => `
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[9px] font-black uppercase px-2 py-1 bg-slate-100 rounded-md text-slate-500">${fund.category}</span>
+                            <span class="text-[10px] font-bold text-slate-400"><i class="fa-solid fa-location-dot"></i> ${fund.colony}, ${fund.city}</span>
+                        </div>
+                        <h4 class="text-lg font-black text-slate-800 mt-2">${fund.title}</h4>
+                        <p class="text-sm font-black text-emerald-600 mt-2">Goal: ${formatHiveCurrency(fund.goal)}</p>
+                        <button onclick="closeHoodFilter(); switchTab('donation');" class="mt-4 w-full bg-emerald-50 text-emerald-600 font-bold text-xs py-2 rounded-xl transition hover:bg-emerald-100">Donate Now</button>
+                    </div>`).join('');
+                
+                if(!filteredFunds.length) {
+                    resultsContainer.innerHTML = `<p class="col-span-full py-10 text-center text-slate-400 italic">No donations needed right now.</p>`;
+                }
+            }
+        }
+
+        function triggerHoodSOS(scope) {
+            switchTab('sos');
+            const scopeSelect = document.getElementById('sos-scope-select');
+            if(scopeSelect) scopeSelect.value = scope;
+            
+            const triageTitle = document.getElementById('sos-triage-title');
+            if (triageTitle) {
+                let scopeName = "";
+                if (scope === 'country') scopeName = globalCountryName;
+                else if (scope === 'state') scopeName = globalState;
+                else scopeName = globalCity;
+                triageTitle.innerText = `${scope.toUpperCase()} SOS: ${scopeName}`;
+            }
+        }
+
+        function closeHoodFilter() { 
+            document.getElementById('hood-filtered-view').classList.add('hidden'); 
+            document.getElementById('dashboard-home-view').classList.remove('hidden'); 
+        }
+
+        window.onload = async () => {
+            const select = document.getElementById('country-select');
+            try {
+                const res = await fetch("https://api.countrystatecity.in/v1/countries", { headers: { "X-CSCAPI-KEY": API_KEY } });
+                const data = await res.json();
+                select.innerHTML = '<option value="">Select Country</option>';
+                data.forEach(c => { select.appendChild(new Option(c.name, c.iso2)); });
+            } catch (e) { 
+                select.innerHTML = '<option value="">Error Loading</option>'; 
+            }
+        };
+
+        async function autoDetectLocation() {
+            const btn = document.querySelector('button[onclick="autoDetectLocation()"]'); 
+            const originalText = btn.innerHTML; 
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Locating...';
+            
+            if (!navigator.geolocation) {
+                alert("Geolocation not supported"); 
+                btn.innerHTML = originalText;
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                currentUserLat = position.coords.latitude; 
+                currentUserLon = position.coords.longitude;
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentUserLat}&lon=${currentUserLon}`);
+                    const data = await res.json();
+                    if (data && data.address) {
+                        const city = data.address.city || data.address.state_district || data.address.town; 
+                        const state = data.address.state; 
+                        const countryCode = data.address.country_code.toUpperCase();
+                        document.getElementById('country-select').value = countryCode; 
+                        await countryPicked(); 
+                        setTimeout(() => { 
+                            document.getElementById('state-search').value = state; 
+                            document.getElementById('state-search').disabled = false; 
+                            document.getElementById('city-search').value = city; 
+                            document.getElementById('city-search').disabled = false; 
+                        }, 800); 
+                    }
+                } catch (error) {
+                    console.error(error);
+                } finally { 
+                    btn.innerHTML = originalText; 
+                }
+            }, () => { 
+                btn.innerHTML = originalText; 
+            });
+        }
+
+        async function countryPicked() {
+            const code = document.getElementById('country-select').value; 
+            if(!code) return;
+            
+            selectedCountryCode = code; 
+            globalCountryCode = code; 
+            globalCountryName = document.getElementById('country-select').options[document.getElementById('country-select').selectedIndex].text;
+            
+            document.querySelectorAll('.dynamic-logo-wing').forEach(w => { 
+                w.style.backgroundImage = `url('https://flagcdn.com/w160/${code.toLowerCase()}.png')`; 
+            });
+            
+            if(document.getElementById('sidebar-source-flag')) {
+                document.getElementById('sidebar-source-flag').src = `https://flagcdn.com/w80/${code.toLowerCase()}.png`;
+            }
+
+            const sSearch = document.getElementById('state-search'); 
+            sSearch.disabled = true; 
+            sSearch.value = ""; 
+            
+            const cSearch = document.getElementById('city-search');
+            cSearch.value = ""; 
+            cSearch.disabled = true;
+            
+            try { 
+                const res = await fetch(`https://api.countrystatecity.in/v1/countries/${code}/states`, { headers: {"X-CSCAPI-KEY": API_KEY} }); 
+                states = await res.json(); 
+                sSearch.disabled = false; 
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        const formatLoc = (level, item) => {
+            if (level === 'country') return `${item.city}, ${item.state}`;
+            if (level === 'state') return `${item.city}`;
+            return `${item.colony}`;
+        };
+
+        function routeToJobFromFilter(index) {
+            closeHoodFilter();
+            switchTab('jobs');
+            openJobDetails(index);
+        }
+
+        function switchTab(tabId) {
+            updateSidebarBadges();
+            closeHoodFilter(); 
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden-screen')); 
+            
+            const targetContent = document.getElementById('content-' + tabId);
+            if(targetContent) targetContent.classList.remove('hidden-screen');
+            
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav', 'shadow-lg')); 
+            const activeBtn = document.getElementById('nav-' + tabId); 
+            if(activeBtn) activeBtn.classList.add('active-nav', 'shadow-lg');
+            
+            if(tabId === 'jobs') {
+                document.getElementById('job-selection-view').classList.remove('hidden');
+                document.getElementById('join-hive-view').classList.add('hidden');
+                document.getElementById('hire-hive-view').classList.add('hidden');
+                document.getElementById('job-apply-view').classList.add('hidden');
+            } 
+            if(tabId === 'gatherings') { 
+                document.getElementById('event-city-name').innerText = globalCity; 
+                renderEvents(); 
+            }
+            if(tabId === 'blood') { 
+                showBloodSelection(); 
+            }
+            if(tabId === 'bazaar') {
+                filterBazaar('All');
+            }
+            if(tabId === 'dashboard') {
+                fetchHiveNews(); 
+            }
+            if(tabId === 'chats') {
+                renderChatList();
+            }
+        }
+
+        function navigate(to) { 
+            step = to; 
+            const views = ['auth-container', 'otp-container', 'profile-container', 'verified-popup']; 
+            views.forEach(id => document.getElementById(id).classList.add('hidden'));
+            const targetId = to === 'verified' ? 'verified-popup' : to + '-container'; 
+            document.getElementById(targetId).classList.remove('hidden'); 
+            document.getElementById('back-btn').classList.toggle('hidden', to === 'auth' || to === 'verified'); 
+        }
+
+        function toggleMode() { 
+            isSignUp = !isSignUp; 
+            document.getElementById('signup-fields').classList.toggle('hidden', !isSignUp); 
+            document.getElementById('mode-toggle').innerText = isSignUp ? "Already have an account? Login" : "Create New Account"; 
+            document.getElementById('main-btn').innerText = isSignUp ? "Create Account" : "Login"; 
+        }
+
+        function togglePass() { 
+            const p = document.getElementById('reg-pass'); 
+            p.type = p.type === 'password' ? 'text' : 'password'; 
+        }
+
+        function handleBack() { 
+            navigate('auth'); 
+        }
+
+        async function handleProfileFinal(e, bypass = false) { 
+            if(e) e.preventDefault(); 
+            
+            if(!bypass) {
+                const countrySelect = document.getElementById('country-select');
+                globalCountryName = countrySelect.options[countrySelect.selectedIndex]?.text || "India";
+                globalState = document.getElementById('state-search').value || "Telangana";
+                globalCity = document.getElementById('city-search').value || "Hyderabad";
+
+                const userData = { 
+                    name: document.getElementById('p-name').value, 
+                    email: document.getElementById('reg-email').value, 
+                    password: document.getElementById('reg-pass').value, 
+                    profession: document.getElementById('prof-search').value || "Student", 
+                    country: globalCountryName, 
+                    state: globalState, 
+                    city: globalCity, 
+                    colony: "My Area",
+                    lat: currentUserLat, 
+                    lng: currentUserLon
+                };
+                
+                try { 
+                    const response = await fetch('/api/signup', { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify(userData) 
+                    }); 
+                    const result = await response.json(); 
+                    if (!response.ok) { 
+                        alert("❌ Backend Error: " + result.error); 
+                        return; 
+                    }
+                    globalUser = userData.name; 
+                    localStorage.setItem('hive_living_iso2', selectedCountryCode.toLowerCase() || 'in');
+                } catch (error) { 
+                    triggerServerError("Database Error", "Server not found."); 
+                    return; 
+                }
+            } else {
+                if (!localStorage.getItem('hive_living_iso2')) { 
+                    localStorage.setItem('hive_living_iso2', 'in'); 
+                }
+            }
+            
+            const userCountryIso2 = localStorage.getItem('hive_living_iso2') || 'in';
+            if(document.getElementById('sidebar-source-flag')) {
+                document.getElementById('sidebar-source-flag').src = `https://flagcdn.com/w80/${userCountryIso2}.png`;
+            }
+
+            document.getElementById('sidebar-user-name').innerText = globalUser; 
+            document.getElementById('sidebar-user-loc').innerText = `${globalCity}, ${globalState}`; 
+            
+            const bdName = document.getElementById('bd-name');
+            if(bdName) bdName.value = globalUser;
+          
+            fetchHiveNews();
+            
+            // Updates Group Names & Initializes Location Rooms
+            initializeLocationRooms();
+
+            triggerGlobalMigration(userCountryIso2);
+        }
+
+        // --- THE EXACT IMAGE RECREATION MIGRATION SCENE ---
+        function triggerGlobalMigration(livingIso2) {
+            const formBox = document.querySelector('#setup-layer > div');
+            if (formBox) formBox.style.display = 'none';
+            
+            document.getElementById('setup-layer').style.backgroundColor = '#111827'; 
+            document.getElementById('setup-layer').style.backgroundImage = 'radial-gradient(circle at top, #1e293b, #0f172a)';
+            
+            const scene = document.createElement('div'); 
+            scene.id = 'migration-scene';
+            scene.className = "fixed inset-0 overflow-hidden flex flex-col items-center justify-center z-[999]";
+            
+            const livingFlag = `https://flagcdn.com/w160/${livingIso2.toLowerCase()}.png`; 
+
+            scene.innerHTML = `
+                <div class="absolute inset-0 z-0 opacity-50">
+                    <div class="absolute top-10 left-20 w-1 h-1 bg-white rounded-full animate-pulse"></div>
+                    <div class="absolute top-32 left-1/3 w-1 h-1 bg-white rounded-full animate-pulse" style="animation-delay: 0.5s"></div>
+                    <div class="absolute top-20 right-1/4 w-1.5 h-1.5 bg-white rounded-full animate-pulse" style="animation-delay: 1s"></div>
+                    <div class="absolute top-40 right-20 w-1 h-1 bg-white rounded-full animate-pulse" style="animation-delay: 1.5s"></div>
+                </div>
+
+                <div class="absolute top-0 left-0 w-full h-40 z-10 pointer-events-none opacity-40">
+                    <svg class="absolute top-4 left-[-20%] w-48 h-24 fill-[#334155] animate-cloud-slow" viewBox="0 0 24 24"><path d="M17.5,19C19.99,19 22,16.99 22,14.5C22,12.18 20.26,10.28 18,10.05C17.39,7.18 14.96,5 12,5C9.37,5 7.08,6.85 6.27,9.3C3.88,9.58 2,11.66 2,14.12C2,16.81 4.19,19 6.88,19H17.5Z" /></svg>
+                    <svg class="absolute top-10 right-[-20%] w-64 h-32 fill-[#1e293b] animate-cloud-fast" viewBox="0 0 24 24"><path d="M17.5,19C19.99,19 22,16.99 22,14.5C22,12.18 20.26,10.28 18,10.05C17.39,7.18 14.96,5 12,5C9.37,5 7.08,6.85 6.27,9.3C3.88,9.58 2,11.66 2,14.12C2,16.81 4.19,19 6.88,19H17.5Z" /></svg>
+                </div>
+
+                <div class="absolute top-16 w-full text-center opacity-0 animate-fade-in-down z-50" style="animation-fill-mode: forwards;">
+                    <h1 class="text-white font-black text-5xl tracking-tighter drop-shadow-xl mb-2">Welcome to Desi Hive</h1>
+                    <p class="text-amber-500 font-extrabold text-sm tracking-[0.2em] uppercase drop-shadow-md">
+                        You are connecting to ${globalCity}
+                    </p>
+                </div>
+
+                <svg class="absolute w-full h-full z-20 pointer-events-none opacity-0 animate-fade-in" style="animation-delay: 1s; animation-fill-mode: forwards;">
+                    <path d="M calc(75vw) calc(50vh) Q 50vw 35vh calc(25vw) calc(50vh)" fill="transparent" stroke="#38bdf8" stroke-width="3" stroke-dasharray="10 10" class="opacity-60 drop-shadow-[0_0_5px_#38bdf8]"/>
+                </svg>
+
+                <div class="absolute top-1/2 -translate-y-1/2 w-full flex items-center justify-between px-10 md:px-32 z-30 mt-8">
+                    
+                    <div class="relative flex flex-col items-center opacity-0 animate-fade-in-left" style="animation-delay: 0.5s; animation-fill-mode: forwards;">
+                        <div class="w-36 h-48 relative drop-shadow-[0_0_20px_rgba(56,189,248,0.4)]">
+                            <svg viewBox="0 0 24 24" fill="#0f172a" stroke="#38bdf8" stroke-width="0.5" class="w-full h-full drop-shadow-2xl">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                            </svg>
+                            <div class="absolute top-[16%] left-1/2 -translate-x-1/2 w-[70px] h-[70px] rounded-full border-2 border-slate-600 overflow-hidden bg-white shadow-inner">
+                                <img src="${livingFlag}" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <span class="absolute -bottom-2 bg-[#0f172a] text-white text-[10px] font-black px-4 py-1.5 rounded-full tracking-widest border border-slate-700 shadow-xl z-20">DESTINATION</span>
+                    </div>
+
+                    <img src="https://cdn-icons-png.flaticon.com/512/517/517563.png" class="absolute w-20 h-20 z-50 animate-epic-flight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+
+                    <div class="relative flex flex-col items-center opacity-0 animate-fade-in-right" style="animation-delay: 0.8s; animation-fill-mode: forwards;">
+                        <div class="w-32 h-40 md:w-40 md:h-48 flex items-center justify-center drop-shadow-[0_0_20px_rgba(255,153,51,0.5)]">
+                             <div class="w-full h-full" style="
+                                background: linear-gradient(to bottom, #FF9933 33.3%, #FFFFFF 33.3%, #FFFFFF 66.6%, #138808 66.6%);
+                                -webkit-mask-image: url('https://raw.githubusercontent.com/djaiss/mapsicon/master/all/in/vector.svg');
+                                -webkit-mask-size: contain;
+                                -webkit-mask-repeat: no-repeat;
+                                -webkit-mask-position: center;
+                                mask-image: url('https://raw.githubusercontent.com/djaiss/mapsicon/master/all/in/vector.svg');
+                                mask-size: contain;
+                                mask-repeat: no-repeat;
+                                mask-position: center;
+                            "></div>
+                        </div>
+                        <span class="absolute -bottom-2 bg-[#0f172a] text-white text-[10px] font-black px-4 py-1.5 rounded-full tracking-widest border border-slate-700 shadow-xl z-20">ORIGIN</span>
+                    </div>
+
+                </div>
+
+                <div class="absolute bottom-0 left-0 w-[200vw] h-40 z-40 opacity-90 animate-wave-scroll">
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="absolute bottom-0 w-full h-full fill-[#1e3a8a]/60" style="animation: wave-bob 4s ease-in-out infinite alternate;">
+                        <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" transform="translate(0, 120) scale(1, -1)"/>
+                    </svg>
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="absolute bottom-0 w-full h-3/4 fill-[#1d4ed8]/80" style="animation: wave-bob 5s ease-in-out infinite alternate-reverse;">
+                        <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" transform="translate(0, 120) scale(1, -1)"/>
+                    </svg>
+                </div>
+            `;
+            
+            document.getElementById('setup-layer').appendChild(scene); 
+            addSceneStyles();
+
+            setTimeout(() => { 
+                document.getElementById('setup-layer').classList.add('hidden'); 
+                document.getElementById('setup-layer').style.backgroundColor = ''; 
+                document.getElementById('setup-layer').style.backgroundImage = ''; 
+                
+                if (formBox) formBox.style.display = '';
+                
+                const oldScene = document.getElementById('migration-scene');
+                if (oldScene) oldScene.remove();
+                
+                document.getElementById('main-dashboard').classList.remove('hidden'); 
+                fetchHiveNews(); 
+                updateSidebarBadges();
+            }, 6000); 
+        }
+
+        function addSceneStyles() {
+            if (document.getElementById('migration-styles')) return;
+            const styles = `
+                @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes fade-in-down { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes fade-in-left { from { opacity: 0; transform: translateX(-50px) scale(0.9); } to { opacity: 1; transform: translateX(0) scale(1); } }
+                @keyframes fade-in-right { from { opacity: 0; transform: translateX(50px) scale(0.9); } to { opacity: 1; transform: translateX(0) scale(1); } }
+                @keyframes epic-flight {
+                    0% { opacity: 0; right: 20%; top: 50%; transform: scaleX(-1) translateY(0px) rotate(0deg); }
+                    15% { opacity: 1; right: 30%; top: 40%; transform: scaleX(-1) translateY(-20px) rotate(-15deg); }
+                    50% { opacity: 1; right: 50%; top: 35%; transform: scaleX(-1) translateY(-10px) rotate(0deg); }
+                    85% { opacity: 1; right: 70%; top: 40%; transform: scaleX(-1) translateY(10px) rotate(15deg); }
+                    100% { opacity: 0; right: 80%; top: 50%; transform: scaleX(-1) translateY(0px) rotate(0deg); }
+                }
+                @keyframes wave-scroll { from { transform: translateX(0); } to { transform: translateX(-50vw); } }
+                @keyframes wave-bob { from { transform: translateY(0); } to { transform: translateY(15px); } }
+                @keyframes cloud-drift { from { transform: translateX(100vw); } to { transform: translateX(-50vw); } }
+
+                .animate-fade-in { animation: fade-in 1s ease-out; }
+                .animate-fade-in-down { animation: fade-in-down 1s ease-out; }
+                .animate-fade-in-left { animation: fade-in-left 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
+                .animate-fade-in-right { animation: fade-in-right 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
+                .animate-epic-flight { animation: epic-flight 5.5s cubic-bezier(0.45, 0.05, 0.55, 0.95); animation-fill-mode: forwards; animation-delay: 0.5s; }
+                .animate-wave-scroll { animation: wave-scroll 20s linear infinite; }
+                .animate-cloud-slow { animation: cloud-drift 40s linear infinite; }
+                .animate-cloud-fast { animation: cloud-drift 25s linear infinite; animation-delay: -10s; }
+            `;
+            const styleSheet = document.createElement("style"); 
+            styleSheet.id = 'migration-styles';
+            styleSheet.innerText = styles; 
+            document.head.appendChild(styleSheet);
+        } 
+
+        function startSOSCountdown() {
+            const category = document.querySelector('input[name="sos-category"]:checked').value; 
+            const msg = document.getElementById('sos-input-msg').value.trim() || "Urgent help required!";
+            const scopeSelect = document.getElementById('sos-scope-select');
+            const scope = scopeSelect ? scopeSelect.value : 'city';
+            
+            const overlay = document.getElementById('sos-countdown-overlay');
+            const numberDisplay = document.getElementById('countdown-number');
+            const circle = document.getElementById('countdown-circle');
+            const scopeDisplay = document.getElementById('sos-countdown-scope');
+            
+            if(scopeDisplay) scopeDisplay.innerText = scope;
+            if(overlay) overlay.classList.remove('hidden');
+            
+            let timeLeft = 5;
+            if(numberDisplay) numberDisplay.innerText = timeLeft;
+            if(circle) circle.style.strokeDashoffset = '0';
+
+            const siren = document.getElementById('siren-audio'); 
+            if(siren) siren.play().catch(e => console.log("Audio playback blocked", e));
+
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                if(numberDisplay) numberDisplay.innerText = timeLeft;
+                if(circle) circle.style.strokeDashoffset = 283 - (283 * (timeLeft / 5));
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    if(overlay) overlay.classList.add('hidden');
+                    executeLiveSOS(category, msg, scope);
+                }
+            }, 1000);
+        }
+
+        function cancelSOSCountdown() {
+            clearInterval(countdownInterval);
+            const overlay = document.getElementById('sos-countdown-overlay');
+            if(overlay) overlay.classList.add('hidden');
+            const siren = document.getElementById('siren-audio'); 
+            if(siren) { 
+                siren.pause(); 
+                siren.currentTime = 0; 
+            }
+        }
+
+        async function executeLiveSOS(category, msg, scope) {
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by your browser.");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                currentUserLat = lat; 
+                currentUserLon = lng;
+
+                const isCritical = ['Medical Emergency', 'Fire Emergency', 'Safety Threat'].includes(category); 
+                const bgColor = isCritical ? '#dc2626' : '#f97316'; 
+                const banner = document.getElementById('sos-active-banner');
+
+                if(banner) {
+                    banner.style.backgroundColor = bgColor; 
+                    banner.classList.remove('hidden');
+                }
+
+                switchTab('dashboard'); 
+                document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' }); 
+                showSOSMap(lat, lng, msg);
+
+                try {
+                    const response = await fetch('/api/sos-trigger', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            name: globalUser, 
+                            message: msg, 
+                            lat: lat, 
+                            lng: lng, 
+                            category: category, 
+                            scope: scope, 
+                            userCity: globalCity, 
+                            userState: globalState, 
+                            userCountry: globalCountryName 
+                        })
+                    });
+                    const data = await response.json();
+                    const toast = document.getElementById('otp-toast');
+                    if(toast) {
+                        toast.querySelector('span').innerText = `SOS sent! ${data.helpersFound || 0} users in ${scope} notified.`;
+                        toast.classList.add('toast-active');
+                        setTimeout(() => toast.classList.remove('toast-active'), 4000);
+                    }
+                } catch (error) {
+                    triggerServerError("SOS Broadcast Failed", "Could not reach server.");
+                }
+            }, (err) => {
+                alert("Location required for SOS. Please allow location access.");
+            }, { enableHighAccuracy: true });
+        }
+
+        function deactivateSOS() { 
+            const banner = document.getElementById('sos-active-banner');
+            const siren = document.getElementById('siren-audio'); 
+            if(banner) banner.classList.add('hidden'); 
+            if(siren) { 
+                siren.pause(); 
+                siren.currentTime = 0; 
+            }
+        }
+
+        function showSOSMap(lat, lon, message = "Emergency Location") {
+            const mapDiv = document.getElementById('sos-map-container');
+            if (!sosMap) { 
+                sosMap = L.map('sos-map-container').setView([lat, lon], 16); 
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(sosMap);
+            } else { 
+                sosMap.setView([lat, lon], 16); 
+            }
+            
+            const redIcon = L.icon({ 
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', 
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', 
+                iconSize: [25, 41], 
+                iconAnchor: [12, 41], 
+                popupAnchor: [1, -34], 
+                shadowSize: [41, 41] 
+            });
+            
+            if (sosMarker) sosMap.removeLayer(sosMarker);
+            sosMarker = L.marker([lat, lon], {icon: redIcon}).addTo(sosMap).bindPopup(`<b class='text-rose-600 font-black'>🚨 ${message}</b>`).openPopup();
+            setTimeout(() => { sosMap.invalidateSize(); }, 300);
+        }
+
+        async function fetchHiveNews() {
+            const feed = document.getElementById('news-feed-container'); 
+            const locTag = document.getElementById('news-location-tag');
+            if(locTag) locTag.innerText = `${globalCity} • ${globalState}`; 
+            if(!feed) return;
+            feed.innerHTML = '<div class="flex justify-center items-center py-10"><i class="fa-solid fa-spinner fa-spin text-amber-500 text-3xl"></i></div>';
+            try {
+                const safeCountryCode = globalCountryCode ? globalCountryCode.toLowerCase() : 'in';
+                const url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&country=${safeCountryCode}&language=en`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.status === "success" && data.results && data.results.length > 0) {
+                    feed.innerHTML = data.results.slice(0, 5).map(article => `
+                        <a href="${article.link}" target="_blank" class="block p-4 border border-slate-100 rounded-2xl hover:bg-slate-50 hover:border-amber-200 transition-all shadow-sm mb-3 group">
+                            <div class="flex gap-4 items-center">
+                                ${article.image_url ? `<img src="${article.image_url}" class="w-16 h-16 object-cover rounded-xl shadow-sm group-hover:scale-105 transition-transform" onerror="this.style.display='none'">` : '<div class="w-16 h-16 bg-amber-50 rounded-xl flex items-center justify-center text-amber-400 group-hover:scale-105 transition-transform"><i class="fa-regular fa-newspaper text-2xl"></i></div>'}
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-bold text-slate-800 leading-tight mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors">${article.title}</h4>
+                                    <div class="flex justify-between items-center mt-1">
+                                        <span class="text-[9px] font-black text-amber-500 uppercase tracking-widest bg-amber-50 px-2 py-1 rounded-md">${article.source_id || 'Local News'}</span>
+                                        <span class="text-[9px] font-bold text-slate-400"><i class="fa-regular fa-clock"></i> ${new Date(article.pubDate).toLocaleDateString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    `).join('');
+                } else {
+                    throw new Error("API Error");
+                }
+            } catch (error) { 
+                feed.innerHTML = `<p class="text-center text-slate-400 py-10">Local news currently unavailable.</p>`;
+            }
+        }
+
+        function updateSidebarBadges() {
+            const localJobs = hiveJobs.filter(j => j.city === globalCity).length;
+            const localEvents = communityEvents.filter(e => e.city === globalCity).length;
+            const localItems = bazaarItems.length;
+            const activeChats = conversations.length;
+
+            const badgeJobs = document.getElementById('badge-jobs');
+            if (badgeJobs) { badgeJobs.innerText = localJobs; localJobs > 0 ? badgeJobs.classList.remove('hidden') : badgeJobs.classList.add('hidden'); }
+            const badgeEvents = document.getElementById('badge-events');
+            if (badgeEvents) { badgeEvents.innerText = localEvents; localEvents > 0 ? badgeEvents.classList.remove('hidden') : badgeEvents.classList.add('hidden'); }
+            const badgeBazaar = document.getElementById('badge-bazaar');
+            if (badgeBazaar) { badgeBazaar.innerText = localItems; localItems > 0 ? badgeBazaar.classList.remove('hidden') : badgeBazaar.classList.add('hidden'); }
+            const badgeChats = document.getElementById('badge-chats');
+            if (badgeChats) { badgeChats.innerText = activeChats; activeChats > 0 ? badgeChats.classList.remove('hidden') : badgeChats.classList.add('hidden'); }
+        }
+
+        function renderJobsFiltered() {
+            const filter = document.getElementById('job-prof-filter').value; 
+            const feed = document.getElementById('job-board-feed'); 
+            if(!feed) return;
+            let filtered = hiveJobs.filter(j => j.city === globalCity); 
+            if(filter !== "all") { filtered = filtered.filter(j => j.category === filter); }
+            feed.innerHTML = filtered.map((j) => {
+                const realIndex = hiveJobs.indexOf(j);
+                return `<div class="job-card-new">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="bg-blue-50 text-blue-600 text-[9px] font-black px-3 py-1 rounded-md uppercase tracking-wider">${j.category}</span>
+                            <span class="text-emerald-600 font-bold text-sm">${j.salary}</span>
+                        </div>
+                        <h4 class="text-lg font-black text-slate-900 leading-tight mb-2">${j.title}</h4>
+                        <div class="flex items-center gap-1.5 text-xs font-bold text-slate-400 mb-4"><i class="fa-solid fa-location-dot text-slate-300"></i> ${j.colony}, ${j.city}</div>
+                        <p class="text-[10px] text-slate-400 font-bold mb-6">Posted by: <span class="text-blue-600">${j.poster}</span></p>
+                    </div>
+                    <button onclick="openJobDetails(${realIndex})" class="btn-apply-dark">Apply Now</button>
+                </div>`;
+            }).join('');
+            if(!filtered.length) { feed.innerHTML = `<div class="col-span-full py-20 text-center text-slate-400 italic">No community work in ${globalCity}.</div>`; }
+        }
+
+        function openJobDetails(index) {
+            const job = hiveJobs[index];
+            const detailArea = document.getElementById('apply-detail-content');
+            if(!detailArea) return;
+            detailArea.innerHTML = `<span class="bg-blue-100 text-blue-700 text-[10px] px-3 py-1 rounded-full font-black uppercase">${job.category}</span>
+                <h2 class="text-3xl font-black text-slate-900 mt-4">${job.title}</h2>
+                <p class="text-blue-600 font-bold text-xl mt-1">${job.salary}</p>
+                <div class="flex gap-4 mt-4 text-xs font-bold text-slate-400">
+                    <span><i class="fa-solid fa-location-dot"></i> ${job.colony}, ${job.city}</span>
+                    <span><i class="fa-solid fa-user"></i> Posted by ${job.poster}</span>
+                </div>`;
+            document.getElementById('job-selection-view').classList.add('hidden'); 
+            document.getElementById('join-hive-view').classList.add('hidden'); 
+            document.getElementById('hire-hive-view').classList.add('hidden'); 
+            document.getElementById('job-apply-view').classList.remove('hidden');
+        }
+
+        function handleCreatePost(e) {
+            e.preventDefault(); 
+            const content = document.getElementById('post-content').value;
+            if (!content.trim()) return;
+            const feed = document.getElementById('activity-feed');
+            const myPic = document.getElementById('main-profile-pic').src;
+            const newPost = document.createElement('div');
+            newPost.className = "flex gap-4 items-start p-2 hover:bg-slate-50 rounded-2xl transition";
+            newPost.innerHTML = `<img src="${myPic}" class="w-11 h-11 rounded-full border-2 border-white shadow-sm object-cover">
+                <div><p class="text-[13px] font-bold text-slate-800">${globalUser} <span class="text-slate-400 font-normal ml-1">posted an update</span></p>
+                <p class="text-sm font-medium text-slate-600 mt-1 leading-relaxed">${content}</p></div>`;
+            feed.prepend(newPost);
+            closePostModal(); e.target.reset();
+            const toast = document.getElementById('otp-toast');
+            if (toast) { toast.querySelector('span').innerText = "Update posted!"; toast.classList.add('toast-active'); setTimeout(() => toast.classList.remove('toast-active'), 3000); }
+        }
+
+        // --- NEW: DEBOUNCE FUNCTION FOR SEARCH ---
+        function debounce(func, delay) {
+            let timeoutId;
+            return function (...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        }
+
+        // --- NEW: SEARCH BAR LOGIC ---
+        function handleChatSearch(query) {
+            const resultBox = document.getElementById('chat-search-results');
+            
+            if (!query) {
+                resultBox.style.display = 'none';
+                return;
+            }
+
+            // Prefix matching logic (e.g. "su" matches "Surya", "Sujith")
+            const matchedUsers = allUsersDatabase.filter(u => 
+                u.name.toLowerCase().startsWith(query)
+            );
+
+            if (matchedUsers.length > 0) {
+                resultBox.innerHTML = matchedUsers.map(u => `
+                    <div class="chat-search-item" onclick="startNewChat('${u.id}', '${u.name}', '${u.avatar}')">
+                        <img src="${u.avatar}" alt="${u.name}">
+                        <span>${u.name}</span>
+                    </div>
+                `).join('');
+                resultBox.style.display = 'block';
+            } else {
+                resultBox.innerHTML = `<div class="p-4 text-xs text-slate-400 italic text-center">No neighbors found starting with "${query}"</div>`;
+                resultBox.style.display = 'block';
+            }
+        }
+
+        const debouncedChatSearch = debounce((e) => handleChatSearch(e.target.value.trim().toLowerCase()), 300);
+
+        // Attach listener once DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('chat-search-bar');
+            if(searchInput) {
+                searchInput.addEventListener('input', debouncedChatSearch);
+            }
+
+            // Hide search results if clicked outside
+            document.addEventListener('click', (e) => {
+                const searchBox = document.getElementById('chat-search-results');
+                if (searchBox && !e.target.closest('.relative')) {
+                    searchBox.style.display = 'none';
+                }
+            });
+        });
+
+        // --- NEW: START A NEW CHAT FROM SEARCH ---
+        function startNewChat(userId, userName, userAvatar) {
+            // Hide search results and clear input
+            document.getElementById('chat-search-results').style.display = 'none';
+            document.getElementById('chat-search-bar').value = '';
+
+            // Check if chat already exists
+            let existingChatIdx = conversations.findIndex(c => c.id === userId);
+            
+            if (existingChatIdx === -1) {
+                // Create new personal chat
+                const newChat = {
+                    id: userId,
+                    name: userName,
+                    type: "personal",
+                    avatar: userAvatar,
+                    lastMsg: "Say hello!",
+                    time: "Just now",
+                    messages: []
+                };
+                conversations.push(newChat);
+                existingChatIdx = conversations.length - 1;
+                renderChatList();
+            }
+
+            // Open the chat
+            openChat(existingChatIdx);
+        }
+
+        function renderChatList() { 
+            const container = document.getElementById('chat-list-container');
+            if(!container) return;
+            const groupChats = conversations.filter(c => c.type === 'group');
+            const personalChats = conversations.filter(c => c.type === 'personal');
+            let html = `<p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4 mb-3 mt-2">Community Hoods</p>`;
+            html += groupChats.map((c) => renderChatItem(c)).join('');
+            html += `<p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4 mb-3 mt-8">Direct Messages</p>`;
+            html += personalChats.map((c) => renderChatItem(c)).join('');
+            container.innerHTML = html;
+        }
+
+        function renderChatItem(c) {
+            const idx = conversations.findIndex(item => item.id === c.id);
+            const isActive = activeChatIdx === idx ? 'bg-blue-50 border-l-4 border-blue-600' : '';
+            return `<div onclick="openChat(${idx})" class="p-4 flex items-center gap-3 cursor-pointer rounded-2xl hover:bg-white transition-all ${isActive}">
+                    <div class="relative"><img src="${c.avatar}" class="w-12 h-12 rounded-full object-cover shadow-sm">
+                        ${c.type === 'group' ? `<div class="absolute -bottom-1 -right-1 bg-amber-500 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center"><i class="fa-solid fa-users text-[8px] text-white"></i></div>` : ''}
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <div class="flex justify-between items-center"><h4 class="font-bold text-sm text-slate-800">${c.name}</h4><span class="text-[9px] text-slate-400 font-bold">${c.time}</span></div>
+                        <p class="text-xs text-slate-500 truncate">${c.lastMsg}</p>
+                    </div></div>`;
+        }
+
+        function openChat(idx) { 
+            activeChatIdx = idx; 
+            const chat = conversations[idx]; 
+            
+            document.getElementById('no-chat-selected').classList.add('hidden'); 
+            document.getElementById('active-chat-interface').classList.remove('hidden'); 
+            document.getElementById('active-chat-title').innerText = chat.name; 
+            document.getElementById('active-chat-avatar').src = chat.avatar; 
+            
+            const status = document.getElementById('active-chat-status');
+            const roomBadge = document.getElementById('chat-room-badge');
+            
+            if (chat.type === 'group') {
+                status.classList.add('hidden');
+                roomBadge.classList.remove('hidden');
+                roomBadge.innerText = `${chat.level} Room`;
+            } else {
+                status.classList.remove('hidden');
+                roomBadge.classList.add('hidden');
+            }
+
+            if(chat.messages.length === 0) { 
+                chat.messages = [{ sender: chat.name, text: chat.type === 'group' ? "Welcome to the hive room!" : "Say hello!", time: "System", isMe: false }]; 
+            } 
+            
+            renderChatMessages(); 
+            renderChatList(); 
+        }
+
+       // --- UPDATED: Render messages to handle images, docs, and locations ---
+        function renderChatMessages() {
+            const win = document.getElementById('messages-window');
+            const chat = conversations[activeChatIdx];
+            
+            win.innerHTML = chat.messages.map(m => {
+                let contentHtml = `<p class="text-sm font-medium leading-relaxed">${m.text || ''}</p>`;
+                
+                // If it's an image, draw an img tag
+                if (m.type === 'image') {
+                    contentHtml = `<img src="${m.fileUrl}" class="rounded-xl max-w-full h-auto mt-2 shadow-sm border border-white/20">`;
+                } 
+                // If it's a document, draw a neat file box
+                else if (m.type === 'document') {
+                    contentHtml = `
+                        <div class="flex items-center gap-3 bg-white/10 p-3 rounded-xl mt-1 border border-white/30">
+                            <i class="fa-solid fa-file-lines text-2xl opacity-90"></i>
+                            <div class="overflow-hidden">
+                                <p class="text-xs font-bold truncate w-32">${m.text}</p>
+                                <p class="text-[9px] opacity-70">${m.fileSize}</p>
+                            </div>
+                        </div>`;
+                } 
+                // If it's a location, draw a clickable map box
+                else if (m.type === 'location') {
+                    contentHtml = `
+                        <div class="flex items-center gap-3 bg-white/10 p-3 rounded-xl mt-1 border border-white/30 cursor-pointer hover:bg-white/20 transition-colors" onclick="window.open('${m.mapLink}', '_blank')">
+                            <i class="fa-solid fa-map-location-dot text-2xl text-rose-200"></i>
+                            <div>
+                                <p class="text-xs font-bold">Shared Location</p>
+                                <p class="text-[9px] opacity-70">Click to view map</p>
+                            </div>
+                        </div>`;
+                }
+
+                return `
+                <div class="flex ${m.isMe ? 'justify-end' : 'justify-start'}">
+                    <div class="max-w-[75%] p-4 shadow-sm ${m.isMe ? 'chat-bubble-me' : 'chat-bubble-them'}">
+                        ${!m.isMe && chat.type === 'group' && m.time !== 'System' ? `<p class="text-[9px] font-black uppercase mb-1 text-blue-500 opacity-80">${m.sender}</p>` : ''}
+                        ${contentHtml}
+                        <p class="text-[9px] mt-2 opacity-70 text-right font-bold">${m.time}</p>
+                    </div>
+                </div>`;
+            }).join('');
+            
+            win.scrollTop = win.scrollHeight;
+        }
+
+        // --- NEW: Handle the actual file selection for Photos/Docs ---
+        function handleChatFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Close the attachment menu
+            document.getElementById('attach-menu').classList.add('hidden');
+
+            // If it's an image, read it and display it
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    pushChatMessage({ text: "Sent an image", type: 'image', fileUrl: e.target.result });
+                };
+                reader.readAsDataURL(file);
+            } 
+            // If it's a document, just send the name and size
+            else {
+                const sizeKb = (file.size / 1024).toFixed(1);
+                pushChatMessage({ text: file.name, type: 'document', fileSize: sizeKb + ' KB' });
+            }
+            
+            // Reset input so you can send the same file again if needed
+            event.target.value = ''; 
+        }
+
+        // --- UPDATED: Send location with actual GPS coordinates ---
+        function sendChatLoc() { 
+            toggleAttachMenu(); 
+            // Uses the user's current coordinates to generate a Google Maps link
+            const mapLink = `https://www.google.com/maps?q=${currentUserLat},${currentUserLon}`;
+            pushChatMessage({ text: "Shared Location", type: 'location', mapLink: mapLink }); 
+        }
+
+        function pushChatMessage(data) { 
+            const now = new Date(); const time = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0'); 
+            conversations[activeChatIdx].messages.push({ ...data, sender: "You", time: time, isMe: true }); 
+            conversations[activeChatIdx].lastMsg = data.text || "Attachment"; 
+            conversations[activeChatIdx].time = "Just now";
+            
+            renderChatMessages(); 
+            renderChatList(); 
+        }
+
+        function handleChatSendMsg(e) { 
+            e.preventDefault(); 
+            const inp = document.getElementById('chat-input'); 
+            if(inp.value.trim()){ 
+                pushChatMessage({ text: inp.value.trim() }); 
+                inp.value = ""; 
+            } 
+        }
+        
+        function filterBazaar(category) { 
+            const grid = document.getElementById('bazaar-grid'); 
+            let filtered = category === 'All' ? bazaarItems : bazaarItems.filter(i => i.category === category); 
+            if (filtered.length === 0) { grid.innerHTML = `<div class="col-span-full py-10 text-center text-slate-400 italic">No items found.</div>`; return; } 
+            grid.innerHTML = filtered.map(item => `
+                <div class="bazaar-card bg-white p-4 group cursor-pointer" onclick="switchTab('chats'); startNewChat('u${item.id+3}', '${item.seller}', 'https://i.pravatar.cc/150?u=${item.seller}')">
+                    <div class="relative h-40 mb-3 overflow-hidden rounded-xl"><img src="${item.img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform"><span class="absolute top-2 right-2 bg-white/90 text-xs font-bold px-2 py-1 rounded-lg">${item.category}</span></div>
+                    <div class="flex justify-between items-start"><div><h4 class="font-bold text-slate-800">${item.title}</h4><p class="text-xs text-slate-400 mt-1">By ${item.seller}</p></div><span class="text-emerald-600 font-black">${item.price}</span></div>
+                    <button class="w-full mt-4 bg-slate-900 text-white text-[10px] font-bold py-2 rounded-lg uppercase tracking-widest group-hover:bg-amber-500">Chat to Buy</button>
+                </div>`).join(''); 
+        }
+
+        function processContribution() { 
+            const amountInput = document.getElementById('contrib-amount'); const amount = parseInt(amountInput.value); 
+            if (!amount || amount <= 0) return; currentRaised += amount; 
+            const progressPercent = Math.min((currentRaised / goalAmount) * 100, 100); 
+            document.getElementById('raised-amount').innerText = "₹" + currentRaised.toLocaleString(); 
+            document.getElementById('fund-progress-bar').style.width = `${progressPercent}%`; 
+            addContributorToList(globalUser, amount); amountInput.value = ""; 
+            if (currentRaised >= goalAmount) triggerConfetti(); 
+        }
+
+        function openSellModal() { document.getElementById('sell-modal').classList.remove('hidden'); }
+        function closeSellModal() { document.getElementById('sell-modal').classList.add('hidden'); }
+        function toggleAttachMenu() { document.getElementById('attach-menu').classList.toggle('hidden'); }
+        function triggerChatFile(accept) { document.getElementById('chat-file-input').accept = accept; document.getElementById('chat-file-input').click(); toggleAttachMenu(); }
+        function sendChatLoc() { toggleAttachMenu(); pushChatMessage({ text: "Shared Location", type: 'location' }); }
+        function openEventDetails(index) {
+            const ev = communityEvents[index];
+            const modal = document.getElementById('view-event-modal');
+            const content = document.getElementById('view-event-content');
+            
+            const hostName = ev.host || "Community Member"; 
+            
+            content.innerHTML = `
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="text-[10px] font-black uppercase px-4 py-1.5 rounded-full ${getEventColor(ev.type)}">${ev.type}</span>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide"><i class="fa-regular fa-clock"></i> ${ev.time}</span>
+                </div>
+                
+                <h2 class="text-3xl font-black text-slate-900 leading-tight mb-6">${ev.title}</h2>
+                
+                <div class="space-y-4 bg-slate-50 p-6 rounded-3xl border border-slate-100 mb-8">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 shrink-0"><i class="fa-solid fa-user-tie"></i></div>
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hosted By</p>
+                            <p class="text-sm font-bold text-slate-800">${hostName}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-500 shrink-0"><i class="fa-solid fa-location-dot"></i></div>
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Venue</p>
+                            <p class="text-sm font-bold text-slate-800">${ev.loc}</p>
+                            <p class="text-xs text-slate-500 mt-1">${ev.colony || ''}, ${ev.city || ''}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between pt-2">
+                    <div class="flex -space-x-3">
+                        <img class="w-10 h-10 rounded-full border-2 border-white bg-slate-200" src="https://i.pravatar.cc/100?u=${index+10}">
+                        <img class="w-10 h-10 rounded-full border-2 border-white bg-slate-200" src="https://i.pravatar.cc/100?u=${index+20}">
+                        <div class="w-10 h-10 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500">+${ev.attendees}</div>
+                    </div>
+                    <button onclick="toggleJoinHoodFilter(${index}, '${ev.level}')" class="bg-slate-900 text-white px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition shadow-lg ${ev.joined ? 'bg-emerald-500 hover:bg-emerald-600' : ''}">
+                        ${ev.joined ? 'Joined' : 'Join Event'}
+                    </button>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeViewEventModal() {
+            document.getElementById('view-event-modal').classList.add('hidden');
+        }
+        // --- GATHERINGS & EVENTS LOGIC ---
+
+        // 1. Open the "Host Event" Modal
+        function openEventModal() {
+            document.getElementById('event-modal').classList.remove('hidden');
+        }
+
+        // 2. Close the "Host Event" Modal
+        function closeEventModal() {
+            document.getElementById('event-modal').classList.add('hidden');
+        }
+
+        // 3. Handle saving a new Event
+        function handleCreateEvent(e) {
+            e.preventDefault();
+            
+            // Get the data from the form
+            const title = document.getElementById('e-title').value;
+            const type = document.getElementById('e-type').value;
+            const time = document.getElementById('e-time').value;
+            const loc = document.getElementById('e-loc').value;
+
+            // Add the new event to the top of our communityEvents array
+            communityEvents.unshift({
+                title: title,
+                type: type,
+                time: time,
+                loc: loc,
+                attendees: 1, // You are the host/first attendee
+                joined: true,
+                host: globalUser,
+                level: "city",
+                colony: "My Area",
+                city: globalCity,
+                state: globalState,
+                country: globalCountryName
+            });
+
+            // Close the modal and clear the form
+            closeEventModal();
+            e.target.reset();
+            
+            // Refresh the screen to show the new event
+            if (!document.getElementById('content-gatherings').classList.contains('hidden-screen')) {
+                renderEvents();
+            } else if (!document.getElementById('hood-filtered-view').classList.contains('hidden')) {
+                openHoodFilter('city', 'gatherings');
+            }
+
+            // Show a success toast
+            const toast = document.getElementById('otp-toast');
+            if (toast) { 
+                toast.querySelector('span').innerText = "Event Created Successfully!"; 
+                toast.classList.add('toast-active'); 
+                setTimeout(() => toast.classList.remove('toast-active'), 3000); 
+            }
+        }
+
+        // 4. Handle the "Join" button logic
+        function toggleJoinHoodFilter(index, level) {
+            // Toggle the joined status true/false
+            communityEvents[index].joined = !communityEvents[index].joined;
+            
+            // Adjust the attendee count up or down
+            if (communityEvents[index].joined) {
+                communityEvents[index].attendees += 1;
+            } else {
+                communityEvents[index].attendees -= 1;
+            }
+
+            // Refresh the screen so the button changes from "Join" to "Joined" (Green)
+            if (!document.getElementById('content-gatherings').classList.contains('hidden-screen')) {
+                renderEvents();
+            }
+            if (!document.getElementById('hood-filtered-view').classList.contains('hidden')) {
+                openHoodFilter(level, 'gatherings');
+            }
+            
+            // If the detail modal is currently open, refresh it too
+            const modal = document.getElementById('view-event-modal');
+            if (modal && !modal.classList.contains('hidden')) {
+                openEventDetails(index); 
+            }
+        }
+
+        // 5. Render the Main Gatherings Tab Feed
+        function renderEvents() {
+            const grid = document.getElementById('events-grid');
+            if (!grid) return;
+            
+            // Filter to show only events in the user's current city
+            const localEvents = communityEvents.filter(ev => ev.city === globalCity);
+            
+            grid.innerHTML = localEvents.map(ev => {
+                const realIndex = communityEvents.indexOf(ev);
+                return `
+                <div class="event-card-new">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[9px] font-black uppercase px-4 py-1.5 rounded-full ${getEventColor(ev.type)}">${ev.type}</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">${ev.time}</span>
+                    </div>
+                    <h4 class="text-xl font-black text-slate-900 leading-tight mb-2 cursor-pointer hover:text-blue-600 transition-colors" onclick="openEventDetails(${realIndex})">${ev.title}</h4>
+                    <p class="text-xs font-bold text-slate-400 mb-6 flex items-center gap-1.5">
+                        <i class="fa-solid fa-location-dot text-slate-300"></i> ${ev.loc}, ${ev.colony || globalCity}
+                    </p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex -space-x-3">
+                            <img class="w-8 h-8 rounded-full border-2 border-white bg-slate-200" src="https://i.pravatar.cc/100?u=${realIndex+10}">
+                            <img class="w-8 h-8 rounded-full border-2 border-white bg-slate-200" src="https://i.pravatar.cc/100?u=${realIndex+20}">
+                            <div class="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[9px] font-black text-slate-500">+${ev.attendees}</div>
+                        </div>
+                        <button onclick="toggleJoinHoodFilter(${realIndex}, 'city')" class="btn-join-pill ${ev.joined ? 'active' : ''}">${ev.joined ? 'Joined' : 'Join'}</button>
+                    </div>
+                </div>`;
+            }).join('');
+            
+            if(!localEvents.length) {
+                grid.innerHTML = `<p class="col-span-full py-10 text-center text-slate-400 italic">No events found in ${globalCity}.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
